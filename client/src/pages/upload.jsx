@@ -21,7 +21,7 @@ function Upload() {
       const formData = new FormData();
       formData.append("file", file); // ✅ single file
 
-      const res = await fetch("http://localhost:3000/uploads", {
+      const res = await fetch("https://sharesphere-common-sharing-point.onrender.com/uploads", {
         method: "POST",
         body: formData,
       });
