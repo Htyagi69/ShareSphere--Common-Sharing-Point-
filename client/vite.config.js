@@ -11,4 +11,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // This provides a fallback for the 'global' variable if the script tag fails
+    global: 'window',
+  },
 })

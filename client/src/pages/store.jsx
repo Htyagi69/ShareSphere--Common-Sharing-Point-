@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react'
-
+//for showing public folder url
 function Store() {
     let [img,setImg]=useState([]);
     let [file,setFile]=useState([]);
@@ -34,7 +34,7 @@ function Store() {
      const SERVER_URL = 'http://localhost:3000/files';
         return (
             <div>
-                <h1 className='text-4xl text-green-500 font-extrabold'>DashBoard</h1>
+                <h1 className='text-4xl text-green-500 font-extrabold'>Local</h1>
                   <div className="relative flex w-full flex-col overflow-hidden ">
           <div className=" w-full flex flex-wrap justify-center">
             {img.map((item,index)=>(
