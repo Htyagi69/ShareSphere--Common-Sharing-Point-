@@ -6,7 +6,7 @@ function Dashboard() {
     const [img,setImg]=useState([])
 const handlefiles=async ()=>{
   try{
-    const response=await fetch('https://sharesphere-common-sharing-point.onrender.com/',{
+    const response=await fetch('https://sharesphere-common-sharing-point-1.onrender.com/',{
          method:'GET',
     })
 
