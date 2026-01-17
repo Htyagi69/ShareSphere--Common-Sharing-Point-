@@ -6,7 +6,7 @@ function Store() {
     let [video,setVideo]=useState([]);
     
      useEffect(()=>{
-        fetch('https://sharesphere-common-sharing-point.onrender.com/list')
+        fetch('https://sharesphere-common-sharing-point-1.onrender.com/list')
         .then(res=>res.json())
         .then(data=>{
             const images=[]
