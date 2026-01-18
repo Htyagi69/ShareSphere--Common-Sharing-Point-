@@ -94,16 +94,16 @@ async function download(url,name){
 // This tells Express: "When someone asks for /files, look in my public folder"
 app.use('/files',express.static(path.join(__dirname,"public")))
 
-app.get('/list',async(req,res)=>{
-    const publicPath=path.join(__dirname,"public");
-     fs.readdir(publicPath,(err,files)=>{
-        if(err){
-          console.error('Unable to scan direstory',err);
-          return res.status(500).json({error:'Internal server Error'})
-        }
-        res.json(files)
-     })
-})
+// app.get('/list',async(req,res)=>{
+//     const publicPath=path.join(__dirname,"public");
+//      fs.readdir(publicPath,(err,files)=>{
+//         if(err){
+//           console.error('Unable to scan direstory',err);
+//           return res.status(500).json({error:'Internal server Error'})
+//         }
+//         res.json(files)
+//      })
+// })
 app.get('/',async(req,res)=>{
   try{
     const list=await db.list({include_docs:true});
