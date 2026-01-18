@@ -41,7 +41,7 @@ const init=async ()=>{
   init();
 
 app.use(cors({
-    origin:"https://share-sphere-common-sharing-point.vercel.app/",
+    origin:"https://share-sphere-common-sharing-point.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true,
