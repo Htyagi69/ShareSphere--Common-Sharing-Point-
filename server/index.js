@@ -20,7 +20,7 @@ const __dirname=path.dirname(__filename)
 const user=process.env.DB_user
 const pass=process.env.password
 
-const connectedURL=`http://${user}:${pass}@127.0.0.1:5984`;
+const connectedURL=process.env.COUCH_URL||`http://${user}:${pass}@127.0.0.1:5984`;
 
 const nano=nanoLib(connectedURL)
 const db=nano.db.use('share-point')
