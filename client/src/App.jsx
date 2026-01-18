@@ -2,7 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import  Upload  from './pages/upload'
 import Dashboard from './pages/dashboard'
-import Store from './pages/store'
+// import Store from './pages/store'
 import { BackgroundRippleEffect } from './components/ui/background-ripple-effect'
 import Pouchdb from './pages/pouchdb'
 import OfflineStore from './pages/OfflineStore'
@@ -14,7 +14,7 @@ function App() {
         <h1 className='text-green-600 text-5xl font-extrabold'>SharePoint</h1>
        {/* <BackgroundRippleEffect/> */}
         <OfflineStore/>
-       <Store/>
+       {/* <Store/> */}
         {/* <Dashboard/> */}
         <Upload/>
         <Pouchdb/>
