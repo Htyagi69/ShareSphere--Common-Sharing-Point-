@@ -95,7 +95,7 @@ function OfflineStore() {
                   <div className="relative flex w-full flex-col overflow-hidden ">
           <div className=" w-full flex flex-wrap justify-center">
             {img.map((item,index)=>(
-              <div key={index} className="bg-black w-78 h-66 rounded-2xl flex m-3 overflow-hidden">
+              <div key={index} className="bg-black w-45 h-35 rounded-2xl flex m-3 overflow-hidden">
                 <img src={item} alt="img" className="w-full bg-cover flex"></img>
               </div>))}
             {/* {file.map((item,index)=>(
@@ -103,7 +103,7 @@ function OfflineStore() {
               <iframe src={item} alt="file" className="w-full bg-cover flex"></iframe>
               </div>))} */}
               {video.map((item,index)=>(
-                <div key={index} className="bg-black w-78 h-66 rounded-2xl flex m-3 overflow-hidden">
+                <div key={index} className="bg-black w-45 h-35 rounded-2xl flex m-3 overflow-hidden">
                   <video src={item} controls alt="video" className="w-full bg-cover flex"></video>
                 </div>))}
                    {file.map((item, index) => (
