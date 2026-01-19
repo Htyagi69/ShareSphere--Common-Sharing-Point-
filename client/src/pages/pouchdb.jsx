@@ -7,7 +7,7 @@ function Pouchdb() {
     window.db=db;
     //points to couchDb
     // const remoteDB=new PouchDb(`http://${import.meta.env.VITE_USER}:${import.meta.env.VITE_PASSWORD}@127.0.0.1:5984/share-point`)
-    const remoteDB=new PouchDb(`https://${import.meta.env.VITE_USER}:${import.meta.env.VITE_PASSWORD}@couchdb-2-t5aq.onrender.com `)
+    const remoteDB=new PouchDb(`https://${import.meta.env.VITE_USER}:${import.meta.env.VITE_PASSWORD}@couchdb-3-00l8.onrender.com`)
     const [files,setFiles]=useState([])
 
     async function loadLocaldata(){
