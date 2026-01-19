@@ -38,7 +38,7 @@ function Pouchdb() {
             <h2>ShareSphere Offline Storage ({files.length} files)</h2>
             <div className='flex justify-center items-center  gap-2.5'>
                 {files.map(file => (
-                    <div key={file._id} style={{ border: '1px solid #ddd' }} className='p-2.5 rounded-xl w-150'>
+                   <div key={file._id} style={{ border: '1px solid #ddd' }} className='p-2.5 rounded-xl w-150'>
                         <strong>📄 {file.name}</strong>
                         <div className='gap-4 flex justify-evenly'>
                         <a href={file.url} target="_blank" rel="noreferrer" className='bg-black p-1 text-white rounded-xl'>Open File</a>
