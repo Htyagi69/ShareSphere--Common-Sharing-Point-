@@ -21,6 +21,7 @@ const user=process.env.DB_user
 const pass=process.env.password
 
 const connectedURL=process.env.COUCH_URL||`http://${user}:${pass}@127.0.0.1:5984`;
+// const connectedURL=`http://${user}:${pass}@127.0.0.1:5984`;
 
 const nano=nanoLib(connectedURL)
 const db=nano.db.use('share-point')
@@ -41,7 +42,7 @@ const init=async ()=>{
   init();
 
 app.use(cors({
-    origin:"https://share-sphere-common-sharing-point.vercel.app",
+    origin:["https://share-sphere-common-sharing-point.vercel.app", "http://localhost:5173" , "share-sphere-common-sharing-point-git-main-harshiis-projects.vercel.app", "share-sphere-common-sharing-point-cv5l1fqn3-harshiis-projects.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true,
@@ -65,7 +66,6 @@ const uploads=async(file)=>{
        Body: file.buffer, // ✅ CORRECT
        ContentType: file.mimetype,
        ServerSideEncryption: "aws:kms",
-    //    SSEKMSKeyId: process.env.KMS_KEY_ID, //key for encrption crated by user cost$1 /month
     })
 
    const result=await s3.send(command)
@@ -82,28 +82,15 @@ const uploads=async(file)=>{
   // await the signed URL and return it
   return await getSignedUrl(s3, command, { expiresIn });
   }
-async function download(url,name){
-    fs.writeFile(path.join(__dirname,"public",`${name}`),url,"utf-8",(err)=>{
-       if(err) console.error('Its not Online',err);
-       else{
-        console.log('Downloaded');
-       }
-    })
-}
+// async function download(url,name){
+//     fs.writeFile(path.join(__dirname,"public",`${name}`),url,"utf-8",(err)=>{
+//        if(err) console.error('Its not Online',err);
+//        else{
+//         console.log('Downloaded');
+//        }
+//     })
+// }
 
-// This tells Express: "When someone asks for /files, look in my public folder"
-app.use('/files',express.static(path.join(__dirname,"public")))
-
-// app.get('/list',async(req,res)=>{
-//     const publicPath=path.join(__dirname,"public");
-//      fs.readdir(publicPath,(err,files)=>{
-//         if(err){
-//           console.error('Unable to scan direstory',err);
-//           return res.status(500).json({error:'Internal server Error'})
-//         }
-//         res.json(files)
-//      })
-// })
 app.get('/',async(req,res)=>{
   try{
     const list=await db.list({include_docs:true});
@@ -122,7 +109,7 @@ app.post('/uploads',upload.single("file"),async(req,res)=>{
   return res.status(400).json({ message: "No file uploaded" });
 }
 
-    // console.log('file=',file.originalname); 
+    console.log('file=',file); 
     try{
      await uploads(file);
     const urllink= await getsignedfileURL(`uploads/${file.originalname}`,'sharesphere-uploads-2026',3600);
@@ -133,7 +120,6 @@ app.post('/uploads',upload.single("file"),async(req,res)=>{
       key:`uploads/${file.originalname}`,
       createdAt:new Date().toISOString()
      }
-     await download(file.buffer,file.originalname);
      await db.insert(meta);
     return res.json({
         name:file.originalname,
