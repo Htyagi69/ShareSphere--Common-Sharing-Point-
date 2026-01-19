@@ -42,7 +42,10 @@ const init=async ()=>{
   init();
 
 app.use(cors({
-    origin:["https://share-sphere-common-sharing-point.vercel.app", "http://localhost:5173" , "share-sphere-common-sharing-point-git-main-harshiis-projects.vercel.app", "share-sphere-common-sharing-point-cv5l1fqn3-harshiis-projects.vercel.app"],
+    origin:["https://share-sphere-common-sharing-point.vercel.app",
+            "http://localhost:5173" ,
+            "https://share-sphere-common-sharing-point-git-main-harshiis-projects.vercel.app",
+            "https://share-sphere-common-sharing-point-cv5l1fqn3-harshiis-projects.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true,
