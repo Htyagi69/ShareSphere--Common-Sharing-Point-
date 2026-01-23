@@ -10,9 +10,11 @@ import  nanoLib from 'nano'
 import { url } from 'inspector';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
+import {handleUserSignup,handleUserLogin} from './Auth/auth.js'
+import LoggedInUsersOnly from './Middleware/auth.js'
+import cookieParser from 'cookie-parser';
 const app=express();
-const PORT=3000;
+const PORT=process.env.PORT_NO||3000;
 
 const __filename=fileURLToPath(import.meta.url)
 const __dirname=path.dirname(__filename)
@@ -20,8 +22,8 @@ const __dirname=path.dirname(__filename)
 const user=process.env.DB_user
 const pass=process.env.password
 
-const connectedURL=process.env.COUCH_URL||`http://${user}:${pass}@127.0.0.1:5984`;
-// const connectedURL=`http://${user}:${pass}@127.0.0.1:5984`;
+// const connectedURL=process.env.COUCH_URL||`http://${user}:${pass}@127.0.0.1:5984`;
+const connectedURL=`http://${user}:${pass}@127.0.0.1:5984`;
 
 const nano=nanoLib(connectedURL)
 const db=nano.db.use('share-point')
@@ -47,12 +49,13 @@ app.use(cors({
             "https://share-sphere-common-sharing-point-git-main-harshiis-projects.vercel.app",
             "https://share-sphere-common-sharing-point-cv5l1fqn3-harshiis-projects.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization","Cookie"],
     credentials:true,
 }))
 
 app.use(express.json());
 app.use(express.urlencoded({extended:'true'}))
+app.use(cookieParser())
 
 const s3=new S3Client({
     region:process.env.AWS_REGION
@@ -106,7 +109,7 @@ app.get('/',async(req,res)=>{
   }
 })
 
-app.post('/uploads',upload.single("file"),async(req,res)=>{
+app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
     const file=req.file;
     if (!file) {
   return res.status(400).json({ message: "No file uploaded" });
@@ -133,6 +136,41 @@ app.post('/uploads',upload.single("file"),async(req,res)=>{
    console.error(err);
    return res.status(500).json({ message: "Upload failed" });
     }
+})
+
+app.post('/auth/signup',async(req,res)=>{
+   const user=req.body;
+   const status= await handleUserSignup(user);
+   res.status(200).json(status)
+  })
+  
+  app.post('/auth/login',async(req,res)=>{
+    const user=req.body;
+    const token=await handleUserLogin(user);
+      res.cookie('uid',token,{
+        httpOnly:true,
+        secure:false,
+        sameSite:'lax',
+        path:'/',
+      })
+    res.status(200).json({message:'You are logged in',token:token})
+})
+
+app.get('/auth/verify',LoggedInUsersOnly,(req,res)=>{
+     res.status(200).json({
+      authenticated:true,
+      user:req.user
+     })
+
+app.post('/auth/logout',(req,res)=>{
+    res.clearCookie('uid',{
+      httpOnly:true,
+        secure:false,
+        sameSite:'lax',
+        path:'/',
+    })
+    return res.status(200).json({ message: "Logged out successfully" });
+})
 })
 
 app.listen(PORT,()=>console.log(`server started at http://localhost:${PORT}`))
