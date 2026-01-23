@@ -13,9 +13,12 @@
     "@aws-sdk/client-s3": "^3.962.0",
     "@aws-sdk/s3-request-presigner": "^3.965.0",
     "@aws-sdk/url-parser": "^3.370.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.5",
     "multer": "^2.0.2",
     "nano": "^11.0.3",
     "nodemon": "^3.1.11"
