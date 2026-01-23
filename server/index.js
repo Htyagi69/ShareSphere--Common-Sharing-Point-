@@ -150,7 +150,7 @@ app.post('/auth/signup',async(req,res)=>{
       res.cookie('uid',token,{
         httpOnly:true,
         secure:true,
-        sameSite:'lax',
+        sameSite:'none',
         path:'/',
       })
     res.status(200).json({message:'You are logged in',token:token})
@@ -166,7 +166,7 @@ app.post('/auth/logout',(req,res)=>{
     res.clearCookie('uid',{
       httpOnly:true,
         secure:true,
-        sameSite:'lax',
+        sameSite:'none',
         path:'/',
     })
     return res.status(200).json({ message: "Logged out successfully" });
