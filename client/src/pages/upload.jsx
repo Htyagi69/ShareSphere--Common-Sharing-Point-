@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FileUpload } from "@/components/ui/file-upload";
+import { toast } from "sonner";
 
 function Upload() {
   const [files, setFiles] = useState([]);
@@ -25,6 +26,7 @@ function Upload() {
       const res = await fetch("https://sharesphere-common-sharing-point-2.onrender.com/uploads", {
         method: "POST",
         body: formData,
+        credentials:'include',
       });
 
       if (!res.ok) {
@@ -33,7 +35,8 @@ function Upload() {
 
       const result = await res.json();
       console.log(result);
-      alert("Upload successful");
+      toast.success("Uploaded Successfully")
+      window.location.href="/"
     } catch (err) {
       console.error(err);
       alert("Upload error");
