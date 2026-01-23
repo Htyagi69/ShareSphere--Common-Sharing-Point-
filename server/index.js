@@ -161,6 +161,7 @@ app.get('/auth/verify',LoggedInUsersOnly,(req,res)=>{
       authenticated:true,
       user:req.user
      })
+})
 
 app.post('/auth/logout',(req,res)=>{
     res.clearCookie('uid',{
