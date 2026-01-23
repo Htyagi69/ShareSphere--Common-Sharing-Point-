@@ -172,6 +172,5 @@ app.post('/auth/logout',(req,res)=>{
     })
     return res.status(200).json({ message: "Logged out successfully" });
 })
-})
 
 app.listen(PORT,()=>console.log(`server started at http://localhost:${PORT}`))
