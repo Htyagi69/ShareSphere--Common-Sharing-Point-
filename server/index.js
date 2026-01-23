@@ -149,7 +149,7 @@ app.post('/auth/signup',async(req,res)=>{
     const token=await handleUserLogin(user);
       res.cookie('uid',token,{
         httpOnly:true,
-        secure:false,
+        secure:true,
         sameSite:'lax',
         path:'/',
       })
@@ -165,7 +165,7 @@ app.get('/auth/verify',LoggedInUsersOnly,(req,res)=>{
 app.post('/auth/logout',(req,res)=>{
     res.clearCookie('uid',{
       httpOnly:true,
-        secure:false,
+        secure:true,
         sameSite:'lax',
         path:'/',
     })
