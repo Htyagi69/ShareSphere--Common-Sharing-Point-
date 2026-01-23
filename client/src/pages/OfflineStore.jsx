@@ -3,23 +3,26 @@ import PouchDb from 'pouchdb';
 const db=new PouchDb('downloaded_files')
 
 const FILE_CACHE_NAME='ShareSphere-file-storage';
+
 export async function save(s3url,filename,filetype){
-try{
- const cache=await caches.open(FILE_CACHE_NAME)
- const result=await fetch(s3url)
- if(!result.ok) throw new Error('"Network response was not ok"');
-     await cache.put(filename,result);
-     console.log(`${filename} is now saved for offline use!`)
-     const uri=await offlineFilesUrl(filename,filetype)
-     let newDoc = {
+
+   try{
+     const cache=await caches.open(FILE_CACHE_NAME)
+     const result=await fetch(s3url)
+     if(!result.ok) throw new Error('"Network response was not ok"');
+        await cache.put(filename,result);
+        console.log(`${filename} is now saved for offline use!`)
+        const uri=await offlineFilesUrl(filename,filetype)
+       let newDoc = {
           _id:filename,
           filename:filename,
           type:filetype,
           downloadedAt: new Date().toISOString()
      }
      try{
-     await db.put(newDoc)
-     console.log('BrowserUrl is===',uri);
+      await db.put(newDoc)
+    //   console.log('BrowserUrl is===',uri);
+      window.location.href='/';
     }catch(err){
         if(err.status===409){
             const existingDoc=await db.get(filename);
@@ -80,7 +83,7 @@ function OfflineStore() {
            const mimetype=item.type.toLowerCase();
            if(mimetype.startsWith('image/'))  imageBatch.push(url);
            else if(mimetype.startsWith('video/'))   videoBatch.push(url)
-           else if(mimetype.includes('pdf')) docsBatch.push(url)
+           else if(mimetype.includes('pdf')) docsBatch.push([item.filename,url])
          }
            setImg(imageBatch)        
         setFile(docsBatch)        
@@ -91,8 +94,7 @@ function OfflineStore() {
 
         return (
             <div>
-                <h1 className='text-4xl text-green-500 font-extrabold'>DashBoard</h1>
-                  <div className="relative flex w-full flex-col overflow-hidden ">
+                  <div className="relative flex w-full flex-col overflow-hidden mt-12">
           <div className=" w-full flex flex-wrap justify-center">
             {img.map((item,index)=>(
               <div key={index} className="bg-black w-45 h-35 rounded-2xl flex m-3 overflow-hidden">
@@ -106,10 +108,10 @@ function OfflineStore() {
                 <div key={index} className="bg-black w-45 h-35 rounded-2xl flex m-3 overflow-hidden">
                   <video src={item} controls alt="video" className="w-full bg-cover flex"></video>
                 </div>))}
-                   {file.map((item, index) => (
+                   {file.map(([name,url], index) => (
            <div 
                    key={index} 
-                    className="flex items-center bg-[#202c33] text-white w-72 p-3 m-3 rounded-lg border-l-4 border-green-500 cursor-pointer hover:bg-[#2a3942] transition-all"
+                    className="flex items-center bg-[#202c33] text-white w-72 h-26 p-3 m-3 rounded-lg border-l-4 border-green-500 cursor-pointer hover:bg-[#2a3942] transition-all"
                  >
         {/* File Icon Area */}
         <div className="bg-[#111b21] p-3 rounded-md mr-3">
@@ -124,15 +126,15 @@ function OfflineStore() {
 
         {/* File Info */}
         <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate">{item}</p>
+            <h2 className="text-sm font-medium truncate">{name}</h2>
             <p className="text-[10px] text-gray-400 uppercase">
-                {item.split('.').pop()} Document
+                PDF Document
             </p>
         </div>
 
         {/* Download Icon */}
         <a 
-            href={item} 
+            href={url} 
             download 
             className="ml-2 text-gray-400 hover:text-white"
         >
