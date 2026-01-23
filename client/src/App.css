@@ -5,3 +5,40 @@
   text-align: center;
 }
 
+/* App.css */
+@layer utilities {
+  .thin-scrollbar {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  /* Show on hover for Firefox */
+  .thin-scrollbar:hover {
+    scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+  }
+
+  /* Webkit (Chrome, Safari, Edge) */
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 5px; /* Very thin */
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent; /* Hidden by default */
+    border-radius: 10px;
+  }
+
+  /* Show thumb on hover */
+  .thin-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0.3);
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.6);
+  }
+}
