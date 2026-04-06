@@ -139,8 +139,10 @@ app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
 })
 
 app.post('/auth/signup',async(req,res)=>{
+  try{
    const user=req.body;
-   const status= await handleUserSignup(user);
+   const token= await handleUserSignup(user);
+   if(!token) return res.status(400).json({message:"SignUp failed"})
         res.cookie('uid',token,{
         httpOnly:true,
         secure:true,
@@ -148,7 +150,9 @@ app.post('/auth/signup',async(req,res)=>{
         path:'/',
         maxAge:24*60*60*1000
       })
-   res.status(200).json(status)
+   res.status(200).json({message:"Signup Successful"})
+  }catch (err) {
+        res.status(500).json({ message: 'SignUp failed', error: err.message });
   })
   
   app.post('/auth/login',async(req,res)=>{
