@@ -26,11 +26,13 @@ export  function Signup() {
         headers:{
           "Content-Type":"application/json"
         },
-        body:JSON.stringify(data)
+        body:JSON.stringify(data),
+        credentials:'include',
       })
       const response=await res.json();
       if(res.ok){
         setIsAuthenticated(true);
+        localStorage.setItem("token",response.token)
         console.log("message=>",response.message);
         toast.success("Welcome to ShareSphere", { position: "bottom-right" })
       }
