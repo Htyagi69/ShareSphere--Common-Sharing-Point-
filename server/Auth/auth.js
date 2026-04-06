@@ -13,13 +13,21 @@ export async function handleUserSignup(userInfo){
     email,
     password
    })
-   return {message:"User is created"}
+   const userDetail=await User.findOne({email,password});
+//    console.log("SignUp user=>",userDetail);
+   const token=await setUser(userDetail);
+   return token;
 }
 
 export async function handleUserLogin(userInfo){
     const {email,password}=userInfo;
     const user=await User.findOne({email,password});
-    if(!user) console.log('No such user')
+    // console.log("loggen in user=>",user);
+    
+    if(!user) {
+        console.log('No such user')
+        return null;
+    }
     const token=await setUser(user)
     return token;
     // res.cookie('uid',token) 
@@ -42,28 +50,3 @@ export async function getUser(token){
     return null;
    }
 }
-
-// export default {
-//     handleUserLogin,
-//     handleUserSignup,
-//     getUser
-// }
-
-// import jwt from 'jsonwebtoken'
-// import dotenv from 'dotenv'
-// dotenv.config()
-
-// const verifytoken=(req,res,next)=>{
-//     const authtoken=req.headers['authorization']
-//     const token=authtoken && authtoken.split(' ')[1]
-//     if(!token) res.status(403).send('A token is required');
-     
-//     try{
-//         const decoded=jwt.verify(token,process.env.JWT_SECRET);
-//         req.user=decoded;
-//         next();
-//     }catch(err){
-//         return res.status(401).send("Invalid Token");
-//     }
-// }
-// export default verifytoken
