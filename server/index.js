@@ -155,22 +155,23 @@ app.post('/auth/signup',async(req,res)=>{
         res.status(500).json({ message: 'SignUp failed', error: err.message });
   })
   
-  app.post('/auth/login',async(req,res)=>{
-    try{
-    const user=req.body;
-    const token=await handleUserLogin(user);
-      res.cookie('uid',token,{
+app.post('/auth/signup',async(req,res)=>{
+  try{
+   const user=req.body;
+   const token= await handleUserSignup(user);
+   if(!token) return res.status(400).json({message:"SignUp failed"})
+        res.cookie('uid',token,{
         httpOnly:true,
         secure:true,
         sameSite:'None',
         path:'/',
         maxAge:24*60*60*1000
       })
-    res.status(200).json({message:'You are logged in'})
-    }catch (err) {
-        res.status(500).json({ message: 'Login failed', error: err.message });
-    }
-})
+   res.status(200).json({message:"Signup Successful"})
+  }catch (err) {
+        res.status(500).json({ message: 'SignUp failed', error: err.message });
+  }
+  })
 
 app.get('/auth/verify',LoggedInUsersOnly,(req,res)=>{
      res.status(200).json({
