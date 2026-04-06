@@ -8,7 +8,7 @@ function AuthContext({children}) {
     const [isAuthenticated,setIsAuthenticated]=useState(false)
     const [loading,setLoading]=useState(true);
     useEffect(()=>{
-        async function checkAuth(){
+        async function checkAuth(retries=3){
         try{
                const result=await fetch('https://sharesphere-common-sharing-point-2.onrender.com/auth/verify',{
                 method:'GET',
@@ -17,6 +17,10 @@ function AuthContext({children}) {
                const  response= await result.json();
                if(response.authenticated) setIsAuthenticated(true);
                 else{
+                    if (retries > 0) {
+                    setTimeout(() => checkAuth(retries - 1), 1000); // retry after 1s
+                    return;
+                }
                    setIsAuthenticated(false);
                    localStorage.removeItem("token");
                    return <div>Please Signup</div>
