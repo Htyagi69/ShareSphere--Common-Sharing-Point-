@@ -141,6 +141,13 @@ app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
 app.post('/auth/signup',async(req,res)=>{
    const user=req.body;
    const status= await handleUserSignup(user);
+        res.cookie('uid',token,{
+        httpOnly:true,
+        secure:true,
+        sameSite:'None',
+        path:'/',
+        maxAge:24*60*60*1000
+      })
    res.status(200).json(status)
   })
   
