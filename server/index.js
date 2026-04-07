@@ -133,7 +133,8 @@ app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
       url:urllink,
       type:file.mimetype,
       key:`uploads/${file.originalname}`,
-      createdAt:new Date().toISOString()
+      createdAt:new Date().toISOString(),
+       urlExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
      }
      await db.insert(meta);
     return res.json({
