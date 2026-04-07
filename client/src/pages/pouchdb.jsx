@@ -3,6 +3,7 @@ import PouchDb from 'pouchdb'
 import {save} from './OfflineStore';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Trash2,FileImage,FileVideo,FileAudio,FileText,File,Download,ExternalLink } from 'lucide-react';
 function Pouchdb() {
     //Initialize the local database (this lives on the user's disk)
     const db=new PouchDb('Share_Local')
@@ -89,22 +90,33 @@ const [seenFiles,setSeenFiles]=useState(()=>{
     console.log("filename",name);
      return !seenFiles.includes(name);
  }
+   const getFileIcon=(type)=>{
+    if(!type) <File size={12}/>
+    if(type.startsWith('image/')) return <FileImage size={16}  className="text-blue-500"/>
+    if(type.startsWith('video/')) return <FileVideo size={16} className="text-purple-500" />
+    if(type.startsWith('audio/')) return <FileAudio size={16} className="text-green-500"/>
+    if (type === 'application/pdf') return <FileText size={16} className="text-red-500" />;
+    return <File size={12} className="text-gray-500" />;
+ }
+
        return (
         <div>
         <div  className='p-2 font-serif mt-5'>
             <h2>ShareSphere Offline Storage ({files.length} files)</h2>
             <div className='flex justify-center items-center flex-col  gap-2.5'>
-                 {files.map(file => (
+                {files.map(file => (
                     <div key={file._id} style={{ border: '1px solid #ddd' }} className={`p-2.5 rounded-xl w-70 ${isNew(file.name)?'bg-green-300':'bg-white'}`}>
-                        <strong>📄 {file.name}</strong>
+                        <div className='flex justify-evenly items-center p-1'>
+                            <strong> {getFileIcon(file.type)}</strong>
+                            <strong>{file.name}</strong>
                           {isNew(file.name) && (
-                        <span className='bg-green-600 text-white text-xs px-2 py-0.5 rounded-full'>
-                                    NEW
-                        </span>
-                        )}
+                            <span className='bg-green-600 text-white text-xs px-2 py-0.5 rounded-full'>
+                                     NEW
+                            </span>
+                             )} </div>
                         <div className='gap-4 flex justify-evenly'>
-                        <a href={file.url} target="_blank" rel="noreferrer" className='bg-black p-1 flex justify-center items-center text-white rounded-sm cursor-pointer'>Open</a>
-                        <p  className='text-[12px] text-gray-800'>Type: {file.type}</p>
+                        <a href={file.url} target="_blank" rel="noreferrer" className='bg-black p-1 flex justify-center items-center text-white rounded-sm cursor-pointer'><ExternalLink size={16} /></a>
+                        {/* <p  className='text-[10px] text-gray-800 flex border-2'>Type: {file.type}</p> */}
                         <Button id='download' variant='default' onClick={()=> handleDownload(file.url,file.name,file.type)} 
                          className='flex justify-center items-center p-1 text-white rounded-sm cursor-pointer' disabled={downloadingId===file.name}>
                             {  downloadingId===file.name ? (
@@ -113,11 +125,14 @@ const [seenFiles,setSeenFiles]=useState(()=>{
                                      Processing...
                                 </>
                             ):(
-                            "Download"
+                                <>
+                                 <Download size={16} />
+                            Download
+                                </>
                             )}
                             </Button>
                         <Button id='delete' onClick={()=> handleDelete(file.name)} 
-                         className='flex justify-center items-center p-1 bg-red-500 text-white rounded-sm cursor-pointer' 
+                         className='flex justify-center items-center  bg-transparent text-red-500 border-red-500 border-2 rounded-sm cursor-pointer hover:bg-red-200' 
                          disabled={deleteId===file.name}>
                             {  deleteId===file.name ? (
                                 <>
@@ -125,7 +140,10 @@ const [seenFiles,setSeenFiles]=useState(()=>{
                                      Deleting...
                                 </>
                             ):(
-                            "Delete"
+                                <>
+                            <Trash2 size={16} /> 
+                               Delete
+                                </>
                             )}
                             </Button>
                         </div>
