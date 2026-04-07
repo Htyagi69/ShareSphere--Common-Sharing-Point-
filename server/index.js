@@ -138,6 +138,24 @@ app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
     }
 })
 
+app.post('/deleteFile',LoggedInUsersOnly,async(req,res)=>{
+    try{
+      const {fileName}=req.body;
+      if(!fileName) return res.status(400).json({ message: "fileName required" });
+      await deleteFile(fileName)
+      const  key=`uploads/${fileName}`
+      const couchRes=await db.find({selector:{key:key}})
+      if(couchRes.docs.length>0){
+          const doc=couchRes.docs[0];
+          await db.destroy(doc._id,doc._rev);
+      }
+      res.status(200).json({ message: "File deleted successfully" });
+    }catch(err){
+      console.error(err);
+   return res.status(500).json({ message: "Deletion failed" });
+    }
+})
+
 app.post('/auth/signup',async(req,res)=>{
   try{
    const user=req.body;
