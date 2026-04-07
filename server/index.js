@@ -73,8 +73,12 @@ const uploads=async(file)=>{
        ContentType: file.mimetype,
        ServerSideEncryption: "aws:kms",
     })
-  
-    const deleteFile=async(fileName)=>{
+   const result=await s3.send(command)
+     console.log("File uploaded");
+     return result;
+}
+
+   const deleteFile=async(fileName)=>{
       const command=new DeleteObjectCommand({
         Bucket:process.env.S3_BUCKET_NAME,
         Key: `uploads/${fileName}`,
@@ -82,11 +86,6 @@ const uploads=async(file)=>{
   const result=await s3.send(command);
   console.log('Deleted',fileName);
   return result;
-}
-  
-   const result=await s3.send(command)
-     console.log("File uploaded");
-     return result;
 }
 
   async function getsignedfileURL(filename,bucketname,expiresIn){
