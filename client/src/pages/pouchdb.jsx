@@ -46,6 +46,29 @@ function Pouchdb() {
               setDownloadingId(null);
              }
        }
+ const [deleteId, setDeleteId] = useState(null)
+       async function handleDelete(name){
+           setDeleteId(name);
+           try{
+              const res=await fetch("https://sharesphere-common-sharing-point-2.onrender.com/deleteFile",{
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({fileName:name}),
+                credentials:'include',
+              })
+              if(!res.ok){
+                toast.error("Delted Failed",{ position: "bottom-right"})
+              }
+              const status=await res.json();
+              console.log("Deleted File",status.message);
+                setFiles(prev=> prev.filter(file=>file.name!==name));
+                toast.success("Delted Successfully",{ position: "bottom-right" });
+           }catch (error) {
+               console.error("Deletion failed", error);
+            } finally {
+              setDeleteId(null);
+             }
+       }
        return (
         <div>
         <div  className='p-2 font-serif mt-5'>
@@ -66,6 +89,18 @@ function Pouchdb() {
                                 </>
                             ):(
                             "Download"
+                            )}
+                            </Button>
+                        <Button id='delete' onClick={()=> handleDelete(file.name)} 
+                         className='flex justify-center items-center p-1 bg-red-500 text-white rounded-sm cursor-pointer' 
+                         disabled={deleteId===file.name}>
+                            {  deleteId===file.name ? (
+                                <>
+                                  <span className="animate-spin mr-2">🌀</span> 
+                                     Deleting...
+                                </>
+                            ):(
+                            "Delete"
                             )}
                             </Button>
                         </div>
