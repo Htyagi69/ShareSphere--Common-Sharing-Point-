@@ -18,6 +18,7 @@ import { UploadBox } from "@/components/upload_dialogbox"
 import { Button } from "@/components/ui/button"
 import { useContext } from "react"
 import { AuthProvider } from "@/components/Context"
+import { LogOut } from "lucide-react"
 
 export default function DashBoard() {
   const  {handlelogout}=useContext(AuthProvider);
@@ -38,7 +39,7 @@ export default function DashBoard() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className='flex  items-center mt-6'>
-       <Button variant="default" className='w-30 cursor-pointer text-red-700 font-extrabold' aria-label="Submit" onClick={handlelogout}>Logout</Button>
+       <Button className='w-30 cursor-pointer bg-gray-400 text-black font-extrabold hover:text-red-500 hover:bg-transparent hover:border-red-500 hover:border-2' aria-label="Submit" onClick={handlelogout}><LogOut size={16}/>Logout</Button>
       </SidebarFooter>
     </Sidebar>
   <div className="flex flex-col w-full h-screen bg-background">
