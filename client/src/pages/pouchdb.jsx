@@ -41,6 +41,7 @@ function Pouchdb() {
            setDownloadingId(name)
            try{
             await save(url,name,type);
+               markseenFiles(name);
            }catch (error) {
                console.error("Download failed", error);
             } finally {
