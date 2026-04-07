@@ -98,7 +98,18 @@ const [seenFiles,setSeenFiles]=useState(()=>{
     if (type === 'application/pdf') return <FileText size={16} className="text-red-500" />;
     return <File size={12} className="text-gray-500" />;
  }
-
+const isExpired=(urlExpiresAt)=>{
+    if (!urlExpiresAt) return true;
+    return Date.now() > new Date(urlExpiresAt).getTime();
+}    
+const getTimeLeft=(urlExpiresAt)=>{
+    if (!urlExpiresAt) return 'Expired';
+    const diff=new Date(urlExpiresAt).getTime() - Date.now();
+    if(diff<=0) return "Expired";
+    const mins=Math.floor(diff/(60*1000));
+      if (mins < 1) return 'Expiring soon';
+    return `${mins} min left`;
+}
        return (
         <div>
         <div  className='p-2 font-serif mt-5'>
@@ -110,9 +121,13 @@ const [seenFiles,setSeenFiles]=useState(()=>{
                             <strong> {getFileIcon(file.type)}</strong>
                             <strong>{file.name}</strong>
                           {isNew(file.name) && (
+                        <>
                             <span className='bg-green-600 text-white text-xs px-2 py-0.5 rounded-full'>
                                      NEW
                             </span>
+                            <span className={`text-xs ${isExpired(file.urlExpiresAt) ? 'text-red-500' : 'text-green-600'}`}>
+                              {getTimeLeft(file.urlExpiresAt)}</span>
+                        </>
                              )} </div>
                         <div className='gap-4 flex justify-evenly'>
                         <a href={file.url} target="_blank" rel="noreferrer" className='bg-black p-1 flex justify-center items-center text-white rounded-sm cursor-pointer'><ExternalLink size={16} /></a>
