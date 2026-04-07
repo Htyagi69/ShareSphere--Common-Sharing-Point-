@@ -69,14 +69,38 @@ function Pouchdb() {
               setDeleteId(null);
              }
        }
+
+    const SEEN_KEY='shareSphere_seenFiles'
+const [seenFiles,setSeenFiles]=useState(()=>{
+    try{
+    return JSON.parse(localStorage.getItem(SEEN_KEY)||'[]')
+    }catch{
+        return [];
+    }
+})
+ const markseenFiles=(name)=>{
+     if(!seenFiles.includes(name)){
+        localStorage.setItem(SEEN_KEY,JSON.stringify([...seenFiles,name]));
+        setSeenFiles(prev=>[...prev,name])
+     }
+ }
+ const isNew=(name)=>{
+    console.log("filename",name);
+     return !seenFiles.includes(name);
+ }
        return (
         <div>
         <div  className='p-2 font-serif mt-5'>
             <h2>ShareSphere Offline Storage ({files.length} files)</h2>
             <div className='flex justify-center items-center flex-col  gap-2.5'>
-                {files.map(file => (
-                    <div key={file._id} style={{ border: '1px solid #ddd' }} className='p-2.5 rounded-xl w-70 '>
+                 {files.map(file => (
+                    <div key={file._id} style={{ border: '1px solid #ddd' }} className={`p-2.5 rounded-xl w-70 ${isNew(file.name)?'bg-green-300':'bg-white'}`}>
                         <strong>📄 {file.name}</strong>
+                          {isNew(file.name) && (
+                        <span className='bg-green-600 text-white text-xs px-2 py-0.5 rounded-full'>
+                                    NEW
+                        </span>
+                        )}
                         <div className='gap-4 flex justify-evenly'>
                         <a href={file.url} target="_blank" rel="noreferrer" className='bg-black p-1 flex justify-center items-center text-white rounded-sm cursor-pointer'>Open</a>
                         <p  className='text-[12px] text-gray-800'>Type: {file.type}</p>
