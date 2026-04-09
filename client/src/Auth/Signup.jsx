@@ -48,7 +48,7 @@ export  function Signup() {
 
     const handleGoogleAuth=async()=>{
     // console.log("Google ke endpoint pe rha hai");
-    window.location.href = 'http://localhost:3000/auth';
+    window.location.href = 'https://sharesphere-common-sharing-point-2.onrender.com/auth';
   }
 
   return (
