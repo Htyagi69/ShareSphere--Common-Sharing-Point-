@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import React, { useContext ,useEffect} from "react";
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ import { AuthProvider } from "@/components/Context";
 import { toast } from "sonner";
 
 export function Login() {
-  const {setIsAuthenticated}=useContext(AuthProvider)
+  const {setIsAuthenticated,isAuthenticated}=useContext(AuthProvider)
   const handleSubmit =async (e) => {
     e.preventDefault();
     console.log("Form submitted");
@@ -45,6 +45,10 @@ export function Login() {
       alert("Network error. Is your server running?");
     }
   };
+  const handleGoogleAuth=async()=>{
+    // console.log("Google ke endpoint pe rha hai");
+    window.location.href = 'https://sharesphere-common-sharing-point-2.onrender.com/auth';
+  }
   return (
     <div
       className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
@@ -70,7 +74,9 @@ export function Login() {
           Login &rarr;
           <BottomGradient />
         </button>
-
+           <div className="mt-2">
+    Don't have an account? <a href="/signup" className="text-blue-500">Create one</a>
+        </div>
         <div
           className="my-8 h-px w-full bg-linear-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 
@@ -86,7 +92,7 @@ export function Login() {
           </button>
           <button
             className="group/btn shadow-input relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-            type="submit">
+            type="button" onClick={handleGoogleAuth}>
             <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
               Google

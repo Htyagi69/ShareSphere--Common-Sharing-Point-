@@ -1,7 +1,7 @@
 import express from 'express'
 import { S3Client,PutObjectCommand,GetObjectCommand,DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import fs from 'fs'
+import fs, { access } from 'fs'
 import multer from 'multer';
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -10,10 +10,19 @@ import  nanoLib from 'nano'
 import { url } from 'inspector';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {handleUserSignup,handleUserLogin} from './Auth/auth.js'
+import {handleUserSignup,handleUserLogin, setUser} from './Auth/auth.js'
 import LoggedInUsersOnly from './Middleware/auth.js'
 import cookieParser from 'cookie-parser';
+import passport from 'passport';
+import session from 'express-session';
+import GoogleStrategy from 'passport-google-oidc'
+import User from './model/auth.js';
+
 const app=express();
+app.use(session({secret:'ILOVEPassportjs',resave:false,saveUninitialized:true}));
+app.use(passport.initialize())
+app.use(passport.session())
+
 const PORT=process.env.PORT_NO||3000;
 
 const __filename=fileURLToPath(import.meta.url)
@@ -201,6 +210,52 @@ app.post('/auth/login',async(req,res)=>{
         res.status(500).json({ message: 'Login failed', error: err.message });
   }
   })
+
+  passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+  scope: [ 'profile' ]
+  }, 
+async (issuer, profile, done) => { // Google OIDC strategy provides 'issuer' first
+  try {
+    // Accessing email from the profile object
+    const email = profile.emails[0].value;
+    
+    // Logic to find or create user in your DB
+    let user = await User.findOne({ email }); 
+    if (!user) {
+      // Create user if they don't exist
+      user = await User.create({ email, firstname: profile.displayName, lastname:'K',password:'GOOGLE_AUTH_PASSPORT_JS'});
+    }
+    console.log("issuer",issuer);
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
+}));
+
+passport.serializeUser((user,done)=>done(null,user));
+passport.deserializeUser((user,done)=>done(null,user));
+
+app.get('/auth', passport.authenticate('google', { 
+  scope: ['profile', 'email']
+}))
+
+app.get('/auth/google',passport.authenticate('google',{failureRedirect:'https://share-sphere-common-sharing-point.vercel.app/login'}),
+async(req,res)=>{
+  // this route contain whaever i pass to done() in the Googlestrategy
+  const userToken=await setUser(req.user);
+  res.cookie('uid',userToken,{
+        httpOnly:true,
+        secure:true,
+        sameSite:'None',
+        path:'/',
+        maxAge:24*60*60*1000
+  })
+  res.redirect('https://share-sphere-common-sharing-point.vercel.app')
+})
+
 
 app.get('/auth/verify',LoggedInUsersOnly,(req,res)=>{
      res.status(200).json({
