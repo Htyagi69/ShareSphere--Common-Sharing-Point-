@@ -7,10 +7,11 @@ import { useContext } from 'react'
 import AuthContext, { AuthProvider } from './components/Context'
 import Dashboard from './pages/Dashboard'
 import { Toaster } from 'sonner'
+import LoadingScreen from './pages/LoadingScreen'
 
 export function AppRoutes(){
   const {isAuthenticated,loading}=useContext(AuthProvider)
-  if (loading) return <div className="p-10 text-center">Loading ShareSphere...</div>;
+if (loading) return <LoadingScreen/>
   return(
     <BrowserRouter>
        <Routes>
