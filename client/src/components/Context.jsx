@@ -10,7 +10,7 @@ function AuthContext({children}) {
     useEffect(()=>{
         async function checkAuth(retries=3){
         try{
-               const result=await fetch('http://localhost:3000/auth/verify',{
+               const result=await fetch('https://sharesphere-common-sharing-point-2.onrender.com/auth/verify',{
                 method:'GET',
                 credentials:'include'
                });
