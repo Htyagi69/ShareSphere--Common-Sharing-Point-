@@ -30,7 +30,7 @@ export default function DashBoard() {
     <SidebarProvider>
     <Sidebar>
       <SidebarHeader className={theme?'bg-black':''}>
-          <SidebarGroupLabel className='mt-4'>  <h2 className='text-green-600 text-3xl font-extrabold'>🌐ShareSphere</h2></SidebarGroupLabel>
+          <SidebarGroupLabel className='mt-4'>  <h2 className='text-green-600 text-3xl font-extrabold flex gap-2'><img src="./ShareSphere1.png" className="w-10 h-10 rounded-2xl"/> ShareSphere</h2></SidebarGroupLabel>
       </SidebarHeader>
       <SidebarContent className={`thin-scrollbar overflow-y-auto  ${theme? 'bg-gray-900':''}`}>
         <SidebarGroup className={theme?'bg-gray-900':''}>
