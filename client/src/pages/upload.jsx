@@ -14,16 +14,15 @@ function Upload() {
       return;
     }
 
-    await handleFileUpload(selectedFiles[0]); // ✅ pass file directly
+    await handleFileUpload(selectedFiles[0]);
   };
-
+  const uploadAPI=`${import.meta.env.VITE_API_BASE_URL}/uploads`;
   const handleFileUpload = async (file) => {
     try {
       const formData = new FormData();
-      formData.append("file", file); // ✅ single file
+      formData.append("file", file); 
 
-      // const res = await fetch("http://localhost:3000/uploads",{
-      const res = await fetch("https://sharesphere-common-sharing-point-2.onrender.com/uploads", {
+      const res = await fetch(uploadAPI,{
         method: "POST",
         body: formData,
         credentials:'include',

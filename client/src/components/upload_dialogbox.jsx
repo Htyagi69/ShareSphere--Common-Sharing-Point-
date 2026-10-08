@@ -10,13 +10,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
+import { UploadIcon } from "lucide-react"
 
 export function UploadBox() {
   return (
    <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default" className='hover:bg-gray-500 cursor-pointer'>Upload</Button>
+        <Button variant="default" className='hover:bg-gray-500 cursor-pointer'><UploadIcon size={16}/>Upload</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
