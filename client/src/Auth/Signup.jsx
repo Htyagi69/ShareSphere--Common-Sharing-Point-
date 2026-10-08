@@ -13,15 +13,16 @@ import { toast } from "sonner";
 
 export  function Signup() {
   const {setIsAuthenticated}=useContext(AuthProvider);
+  const {setUsername}=useContext(AuthProvider);
   const handleSubmit =async (e) => {
     e.preventDefault();
     console.log("Form submitted");
     const formdata=new FormData(e.target);
     const data=Object.fromEntries(formdata.entries())
     console.log("Sending data:", data)
-    
+    const signupURI=`${import.meta.env.VITE_API_BASE_URL}/auth/signup`
     try{
-      const res=await fetch('https://sharesphere-common-sharing-point-2.onrender.com/auth/signup',{
+      const res=await fetch(signupURI,{
         method:'POST',
         headers:{
           "Content-Type":"application/json"
@@ -32,6 +33,7 @@ export  function Signup() {
       const response=await res.json();
       if(res.ok){
         setIsAuthenticated(true);
+        setUsername(response.userName);
         localStorage.setItem("token",response.token)
         console.log("message=>",response.message);
         toast.success("Welcome to ShareSphere", { position: "bottom-right" })
@@ -48,7 +50,8 @@ export  function Signup() {
 
     const handleGoogleAuth=async()=>{
     // console.log("Google ke endpoint pe rha hai");
-    window.location.href = 'https://sharesphere-common-sharing-point-2.onrender.com/auth';
+     const authURI=`${import.meta.env.VITE_API_BASE_URL}/auth`
+    window.location.href = authURI;
   }
 
   return (
