@@ -57,7 +57,7 @@ function OfflineStore() {
     let [video,setVideo]=useState([]);
     
     useEffect(()=>{
-    // This listens to EVERYTHING happening in your 'downloaded_files' DB
+    // This listens to EVERYTHING happening in  'downloaded_files' DB
   db.changes({
       since:'now',
       live:true,
@@ -71,6 +71,7 @@ function OfflineStore() {
       const items=await db.allDocs({include_docs:true});
        const docs= items.rows
       .map(row=>({
+          id:row.id,
           filename:row.doc.filename,
           type:row.doc.type,
       }))
@@ -81,9 +82,9 @@ function OfflineStore() {
            const url=await offlineFilesUrl(item.filename,item.type);
            if(!url) continue;
            const mimetype=item.type.toLowerCase();
-           if(mimetype.startsWith('image/'))  imageBatch.push(url);
-           else if(mimetype.startsWith('video/'))   videoBatch.push(url)
-           else if(mimetype.includes('pdf')) docsBatch.push([item.filename,url])
+           if(mimetype.startsWith('image/'))  imageBatch.push({id:item.id,url:url});
+           else if(mimetype.startsWith('video/'))   videoBatch.push({id:item.id,url:url})
+           else if(mimetype.includes('pdf')) docsBatch.push([item.id,item.filename,url])
          }
            setImg(imageBatch)        
         setFile(docsBatch)        
@@ -92,27 +93,61 @@ function OfflineStore() {
     loadAndFilterFiles();       
         },[])
 
+   const handleRemove=(itemId,url,type)=>{
+        db.get(itemId).then((item)=>{
+            if(type==="img") setImg((prev)=>prev.filter((file)=>file.id!==itemId))
+            else if(type==="video") setVideo((prev)=>prev.filter((file)=>file.id!==itemId))
+            else if(type==="doc") setFile((prev)=>prev.filter((file)=>file.id!==itemId))
+
+            console.log("file removed successfully");
+            return db.remove(item)
+        }).catch((err)=>{
+            console.log(err);   
+        })
+   }
         return (
             <div>
-                  <div className="relative flex w-full flex-col overflow-hidden mt-12">
+            <div className="relative flex w-full flex-col overflow-hidden mt-12">
           <div className=" w-full flex flex-wrap justify-center">
-            {img.map((item,index)=>(
-              <div key={index} className="bg-black w-45 h-35 rounded-2xl flex m-3 overflow-hidden">
-                <img src={item} alt="img" className="w-full bg-cover flex"></img>
-              </div>))}
+             {img.map((item) => (
+               <div key={item.id}
+                 className="relative bg-black w-56 h-35 rounded-2xl m-3 overflow-hidden"
+               >
+                 <a href={item.url} target="_blank" rel="noreferrer">
+                   <img src={item.url} alt="img" className="w-full h-full object-cover"/>
+                 </a>
+             
+                 <button onClick={(e) => {
+                     e.preventDefault();
+                     e.stopPropagation();
+                     handleRemove(item.id, item.url, "img");
+                   }}
+                   className="absolute top-1 right-2 z-50 w-6 h-6 rounded-full bg-black/70 text-white hover:bg-red-600 flex items-center justify-center"
+                 >×</button>
+               </div>))}
             {/* {file.map((item,index)=>(
               <div key={index} className="bg-black w-78 h-66 rounded-2xl flex m-3 overflow-hidden">
               <iframe src={item} alt="file" className="w-full bg-cover flex"></iframe>
               </div>))} */}
-              {video.map((item,index)=>(
-                <div key={index} className="bg-black w-45 h-35 rounded-2xl flex m-3 overflow-hidden">
-                  <video src={item} controls alt="video" className="w-full bg-cover flex"></video>
-                </div>))}
-                   {file.map(([name,url], index) => (
-           <div 
-                   key={index} 
-                    className="flex items-center bg-[#202c33] text-white w-72 h-26 p-3 m-3 rounded-lg border-l-4 border-green-500 cursor-pointer hover:bg-[#2a3942] transition-all"
-                 >
+              {video.map((item)=>(
+                <div key={item.id} className="relative bg-black w-56 h-35 rounded-2xl flex m-3 overflow-hidden">
+                 <a href={item.url} target="_blank" rel="noreferrer">
+                  <video src={item.url} controls alt="video" autoPlay muted loop playsInline className="w-full h-full object-cover"></video>
+                  </a>
+                    <button onClick={()=>{
+                     e.preventDefault();
+                     e.stopPropagation();
+                     handleRemove(item.id, item.url, "video");
+                   }}
+                   className="absolute top-1 right-2 z-50 w-6 h-6 rounded-full bg-black/70 text-white hover:bg-red-600 flex items-center justify-center">
+                  x</button>
+                   </div>
+                ))}
+
+        {file.map(([id,name,url]) => (
+           <div  key={id} 
+           className="relative flex items-center bg-[#202c33] text-white w-72 h-26 p-3 m-3 rounded-lg border-l-4 border-green-500  hover:bg-[#2a3942] transition-all cursor-pointer"
+              onClick={()=>window.open(url,"_blank")}   >
         {/* File Icon Area */}
         <div className="bg-[#111b21] p-3 rounded-md mr-3">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300">
@@ -132,20 +167,20 @@ function OfflineStore() {
             </p>
         </div>
 
-        {/* Download Icon */}
-        <a 
-            href={url} 
-            download 
-            className="ml-2 text-gray-400 hover:text-white"
-        >
+        <a href={url} download  className="ml-2 text-gray-400 hover:text-white">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
         </a>
+    <button onClick={()=>{
+                     e.preventDefault();
+                     e.stopPropagation();
+                handleRemove(id,url,"doc")}}
+              className="absolute top-1 right-2 z-50 w-6 h-6 rounded-full bg-black/70 text-white hover:bg-red-600 flex items-center justify-center">×</button>
     </div>
-               ))}
+            ))}
 
           </div>
         </div>

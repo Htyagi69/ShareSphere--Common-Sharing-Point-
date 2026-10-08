@@ -3,14 +3,14 @@ import PouchDb from 'pouchdb'
 import {save} from './OfflineStore';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Trash2,FileImage,FileVideo,FileAudio,FileText,File,Download,ExternalLink } from 'lucide-react';
+import { Trash2,FileImage,FileVideo,FileAudio,FileText,File,Download,ExternalLink,FolderIcon } from 'lucide-react';
 function Pouchdb() {
     //Initialize the local database (this lives on the user's disk)
     const db=new PouchDb('Share_Local')
     window.db=db;
     //points to couchDb
-    // const remoteDB=new PouchDb(`http://${import.meta.env.VITE_USER}:${import.meta.env.VITE_PASSWORD}@127.0.0.1:5984/demo`)
-    const remoteDB=new PouchDb(`https://${import.meta.env.VITE_USER}:${import.meta.env.VITE_PASSWORD}@couchdb-3-00l8.onrender.com/share-point`)
+    const couchURI=import.meta.env.VITE_API_DB_URL;
+    const remoteDB=new PouchDb(couchURI)
     const [files,setFiles]=useState([])
 
     async function loadLocaldata(){
@@ -49,11 +49,12 @@ function Pouchdb() {
               setDownloadingId(null);
              }
        }
+       const deleteURI=`${import.meta.env.VITE_API_BASE_URL}/deleteFile`
  const [deleteId, setDeleteId] = useState(null)
        async function handleDelete(name){
            setDeleteId(name);
            try{
-              const res=await fetch("https://sharesphere-common-sharing-point-2.onrender.com/deleteFile",{
+              const res=await fetch(deleteURI,{
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({fileName:name}),
@@ -93,10 +94,10 @@ const [seenFiles,setSeenFiles]=useState(()=>{
  }
    const getFileIcon=(type)=>{
     if(!type) <File size={12}/>
-    if(type.startsWith('image/')) return <FileImage size={16}  className="text-blue-500"/>
-    if(type.startsWith('video/')) return <FileVideo size={16} className="text-purple-500" />
-    if(type.startsWith('audio/')) return <FileAudio size={16} className="text-green-500"/>
-    if (type === 'application/pdf') return <FileText size={16} className="text-red-500" />;
+    if(type.startsWith('image/')) return <FileImage size={24}  className="text-blue-500"/>
+    if(type.startsWith('video/')) return <FileVideo size={24} className="text-purple-500" />
+    if(type.startsWith('audio/')) return <FileAudio size={24} className="text-green-500"/>
+    if (type === 'application/pdf') return <FileText size={24} className="text-red-500" />;
     return <File size={12} className="text-gray-500" />;
  }
 const isExpired=(urlExpiresAt)=>{
@@ -113,11 +114,14 @@ const getTimeLeft=(urlExpiresAt)=>{
 }
        return (
         <div>
-        <div  className='p-2 font-serif mt-5'>
+        <div  className='p-2 font-serif mt-5  rounded-xl'>
+            <div className='flex justify-center items-center gap-3 bg-green-500 rounded-xl p-1'>
+                <FolderIcon size={24}/>
             <h2>ShareSphere Offline Storage ({files.length} files)</h2>
+            </div>
             <div className='flex justify-center items-center flex-col  gap-2.5'>
                 {files.map(file => (
-                    <div key={file._id} style={{ border: '1px solid #ddd' }} className={`p-2.5 rounded-xl w-70 ${isNew(file.name)?'bg-green-300':'bg-white'}`}>
+                    <div key={file._id} style={{ border: '1px solid #ddd' }} className={`p-2.5 rounded-xl w-70 m-1 ${isNew(file.name)?'bg-green-300':'bg-gray-200'}`}>
                         <div className='flex justify-evenly items-center p-1'>
                             <strong> {getFileIcon(file.type)}</strong>
                             <strong>{file.name}</strong>
