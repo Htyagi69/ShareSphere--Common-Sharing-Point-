@@ -15,8 +15,9 @@ if (loading) return <LoadingScreen/>
   return(
     <BrowserRouter>
        <Routes>
-            <Route path='/signup' element={isAuthenticated? <Navigate to="/" replace/> : <Signup/>}/>  //Adding the replace attribute in "Navigate to="/" replace"  is important.
-             It prevents the /login or /signup page from being saved in the browser's back-button history
+            <Route path='/signup' element={isAuthenticated? <Navigate to="/" replace/> : <Signup/>}/>  
+            {/* Adding the replace attribute in "Navigate to="/" replace"  is important. */}
+             {/* It prevents the /login or /signup page from being saved in the browser's back-button history */}
             <Route path='/login' element={isAuthenticated? <Navigate to="/" replace/> : <Login/>}/>
             <Route path="/" element={
                 isAuthenticated ? <Dashboard/> : <Navigate to="/login"/>

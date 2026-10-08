@@ -61,7 +61,7 @@ function Pouchdb() {
                 credentials:'include',
               })
               if(!res.ok){
-                toast.error("Delted Failed",{ position: "bottom-right"})
+                toast.error("Deletion Failed",{ position: "bottom-right"})
               }
               const status=await res.json();
               console.log("Deleted File",status.message);
