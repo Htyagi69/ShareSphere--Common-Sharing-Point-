@@ -1,13 +1,11 @@
 import express from 'express'
 import { S3Client,PutObjectCommand,GetObjectCommand,DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import fs, { access } from 'fs'
 import multer from 'multer';
 import cors from 'cors'
 import dotenv from 'dotenv';
 dotenv.config();
 import  nanoLib from 'nano'
-import { url } from 'inspector';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {handleUserSignup,handleUserLogin, setUser} from './Auth/auth.js'
@@ -19,7 +17,7 @@ import GoogleStrategy from 'passport-google-oidc'
 import User from './model/auth.js';
 
 const app=express();
-app.use(session({secret:'ILOVEPassportjs',resave:false,saveUninitialized:true}));
+app.use(session({secret:process.env.passportSecret,resave:false,saveUninitialized:true}));
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -32,7 +30,6 @@ const user=process.env.DB_user
 const pass=process.env.password
 
 const connectedURL=process.env.COUCH_URL||`http://${user}:${pass}@127.0.0.1:5984`;
-// const connectedURL=`http://${user}:${pass}@127.0.0.1:5984`;
 
 const nano=nanoLib(connectedURL)
 const db=nano.db.use('share-point')
@@ -78,7 +75,7 @@ const uploads=async(file)=>{
     const command=new PutObjectCommand({
        Bucket:process.env.S3_BUCKET_NAME,
        Key: `uploads/${file.originalname}`,
-       Body: file.buffer, // ✅ CORRECT
+       Body: file.buffer,
        ContentType: file.mimetype,
        ServerSideEncryption: "aws:kms",
     })
@@ -178,7 +175,8 @@ app.post('/deleteFile',LoggedInUsersOnly,async(req,res)=>{
 app.post('/auth/signup',async(req,res)=>{
   try{
    const user=req.body;
-   const token= await handleUserSignup(user);
+   const authData= await handleUserSignup(user);
+     const token=authData.token;
    if(!token) return res.status(400).json({message:"SignUp failed"})
         res.cookie('uid',token,{
         httpOnly:true,
@@ -187,7 +185,10 @@ app.post('/auth/signup',async(req,res)=>{
         path:'/',
         maxAge:24*60*60*1000
       })
-   res.status(200).json({message:"Signup Successful"})
+   res.status(200).json({
+     userName:authData.name,
+    message:"Signup Successful"
+  })
   }catch (err) {
         res.status(500).json({ message: 'SignUp failed', error: err.message });
   }
@@ -196,7 +197,8 @@ app.post('/auth/signup',async(req,res)=>{
 app.post('/auth/login',async(req,res)=>{
   try{
    const user=req.body;
-   const token= await handleUserLogin(user);
+   const authData= await handleUserLogin(user);
+   const token=authData.token;
   if(!token) return res.status(400).json({message:"Invalid credentials"});
         res.cookie('uid',token,{
         httpOnly:true,
@@ -205,7 +207,10 @@ app.post('/auth/login',async(req,res)=>{
         path:'/',
         maxAge:24*60*60*1000
       })
-   res.status(200).json({message:'You are logged in'})
+   res.status(200).json({
+    userName:authData.name,
+    message:'You are logged in'
+  })
   }catch (err) {
         res.status(500).json({ message: 'Login failed', error: err.message });
   }
