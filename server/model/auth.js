@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { nanoid } from 'nanoid'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -21,9 +22,33 @@ const urlSchema=new mongoose.Schema({
    password:{
     type:String,
     required:true,
-   }
+   },
+   subscribed_Rooms:[{
+      type:mongoose.Schema.ObjectId,
+      ref:'Room',
+      default:[]
+   }]
 })
 
-const User=mongoose.model('users',urlSchema);
+const roomsSchema=new mongoose.Schema({
+   roomName:{
+      type:String,
+      required:true
+   },
+   roomSlug:{
+      type:String,
+      required:true,
+      unique:true
+   },
+   owner:{
+      type:mongoose.Schema.ObjectId,
+      ref:'User'
+   },
+   subscribers:[{
+      type:mongoose.Schema.ObjectId,
+      ref:'User'
+   }],
+})
 
-export default User
+export const User=mongoose.model('User',urlSchema);
+export const Room=mongoose.model('Room',roomsSchema);
