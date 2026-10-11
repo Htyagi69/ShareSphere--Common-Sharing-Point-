@@ -1,20 +1,20 @@
 import express from 'express'
-import { S3Client,PutObjectCommand,GetObjectCommand,DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import multer from 'multer';
-import cors from 'cors'
 import dotenv from 'dotenv';
 dotenv.config();
-import  nanoLib from 'nano'
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {handleUserSignup,handleUserLogin, setUser} from './Auth/auth.js'
+import {upload, uploads,deleteFile,getsignedfileURL } from './services/s3Service.js';
 import LoggedInUsersOnly from './Middleware/auth.js'
+import { roomContextMiddleware,initDB } from './Middleware/roomContextMiddleware.js';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import session from 'express-session';
 import GoogleStrategy from 'passport-google-oidc'
-import User from './model/auth.js';
+import {User,Room} from './model/auth.js';
+import corsMiddleware from './Middleware/cors.js'
+import { nanoid } from 'nanoid';
+import { log } from 'console';
 
 const app=express();
 app.use(session({secret:process.env.passportSecret,resave:false,saveUninitialized:true}));
@@ -26,83 +26,12 @@ const PORT=process.env.PORT_NO||3000;
 const __filename=fileURLToPath(import.meta.url)
 const __dirname=path.dirname(__filename)
 
-const user=process.env.DB_user
-const pass=process.env.password
-
-const connectedURL=process.env.COUCH_URL||`http://${user}:${pass}@127.0.0.1:5984`;
-
-const nano=nanoLib(connectedURL)
-const db=nano.db.use('share-point')
-
-//couchdb initialize
-const init=async ()=>{
-  try{
-    const dblist=await nano.db.list();
-    if(!dblist.includes('share-point')){
-      await nano.db.create('share-point')
-      console.log('share-point is created');
-    }  
-    }catch(err){
-       console.error('Check if CouchDB is running!', err.message);
-    }
-  }
-
-  init();
-
-app.use(cors({
-    origin:["https://share-sphere-common-sharing-point.vercel.app",
-            "http://localhost:5173" ,
-            "https://share-sphere-common-sharing-point-git-main-harshiis-projects.vercel.app",
-            "https://share-sphere-common-sharing-point-cv5l1fqn3-harshiis-projects.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization","Cookie"],
-    credentials:true,
-}))
+app.use(corsMiddleware)
 
 app.use(express.json());
 app.use(express.urlencoded({extended:'true'}))
 app.use(cookieParser())
 
-const s3=new S3Client({
-    region:process.env.AWS_REGION
-})
-
-const upload=multer({storage:multer.memoryStorage()})
-
-const uploads=async(file)=>{
-    console.log('filedata====',file);
-    
-    const command=new PutObjectCommand({
-       Bucket:process.env.S3_BUCKET_NAME,
-       Key: `uploads/${file.originalname}`,
-       Body: file.buffer,
-       ContentType: file.mimetype,
-       ServerSideEncryption: "aws:kms",
-    })
-   const result=await s3.send(command)
-     console.log("File uploaded");
-     return result;
-}
-
-   const deleteFile=async(fileName)=>{
-      const command=new DeleteObjectCommand({
-        Bucket:process.env.S3_BUCKET_NAME,
-        Key: `uploads/${fileName}`,
-  })
-  const result=await s3.send(command);
-  console.log('Deleted',fileName);
-  return result;
-}
-
-  async function getsignedfileURL(filename,bucketname,expiresIn){
-    const command = new GetObjectCommand({
-    Bucket: bucketname,
-    Key: filename,
-  });
-
-  // await the signed URL and return it
-  return await getSignedUrl(s3, command, { expiresIn });
-  }
 // async function download(url,name){
 //     fs.writeFile(path.join(__dirname,"public",`${name}`),url,"utf-8",(err)=>{
 //        if(err) console.error('Its not Online',err);
@@ -112,19 +41,55 @@ const uploads=async(file)=>{
 //     })
 // }
 
-app.get('/',async(req,res)=>{
-  try{
-    const list=await db.list({include_docs:true});
-    // CouchDB returns docs in rows[].doc format
-      const urls=list.rows.map(item=>item.doc.url);
-    return res.json({url:urls});
+app.post('/subscribed/rooms',LoggedInUsersOnly,async(req,res)=>{
+    try{   
+    const userMail=req.user.email
+    console.log("email",userMail);
+    
+    const subscriber=await User.findOne({email:userMail}).populate({
+      path:'subscribed_Rooms',
+      select:"roomName roomSlug owner"
+    })
+    
+    if (!subscriber) {
+      return res.status(404).json({ message: 'User not found in database', lockers: [] });
+    }
+    const userRooms=subscriber.subscribed_Rooms || []
+    console.log("dbs",userRooms);
+    return res.status(200).json({"lockers":userRooms});
   }catch(error){
     console.error('Database error',error)
     return res.status(500).json({message:'Internal Server error'})
   }
 })
 
-app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
+app.post('/:roomName',LoggedInUsersOnly,async(req,res)=>{
+    try{
+    const roomName=req.params.roomName.toLowerCase();   
+    const userId=req.user?._id.toString();
+    
+    const roomSlug=`${roomName}_${nanoid(4)}`.toLowerCase()
+    const room=await Room.create({
+      roomName:roomName,
+      roomSlug:roomSlug,
+      owner:userId,
+      subscribers:[userId]
+    })
+    console.log("room",room);
+    
+    await initDB(roomSlug);
+    await User.findByIdAndUpdate(
+      userId,
+      {$addToSet:{subscribed_Rooms:room._id}}
+    )
+    return res.status(200).json({"message":`${roomName} bucket created`,roomSlug});
+  }catch(error){
+    console.error('Database error',error)
+    return res.status(500).json({message:'Internal Server error'})
+  }
+})
+
+app.post('/:roomName/uploads',LoggedInUsersOnly,roomContextMiddleware,upload.single("file"),async(req,res)=>{
     const file=req.file;
     if (!file) {
   return res.status(400).json({ message: "No file uploaded" });
@@ -142,7 +107,9 @@ app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
       createdAt:new Date().toISOString(),
        urlExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
      }
-     await db.insert(meta);
+     console.log("db",req.db);
+     
+     await req.db.insert(meta);
     return res.json({
         name:file.originalname,
         mimeType:file.mimetype,
@@ -154,16 +121,16 @@ app.post('/uploads',LoggedInUsersOnly,upload.single("file"),async(req,res)=>{
     }
 })
 
-app.post('/deleteFile',LoggedInUsersOnly,async(req,res)=>{
+app.post('/:roomName/deleteFile',LoggedInUsersOnly,roomContextMiddleware,async(req,res)=>{
     try{
       const {fileName}=req.body;
       if(!fileName) return res.status(400).json({ message: "fileName required" });
       await deleteFile(fileName)
       const  key=`uploads/${fileName}`
-      const couchRes=await db.find({selector:{key:key}})
+      const couchRes=await req.db.find({selector:{key:key}})
       if(couchRes.docs.length>0){
           const doc=couchRes.docs[0];
-          await db.destroy(doc._id,doc._rev);
+          await req.db.destroy(doc._id,doc._rev);
       }
       res.status(200).json({ message: "File deleted successfully" });
     }catch(err){
