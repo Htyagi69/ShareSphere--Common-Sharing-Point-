@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { toast } from "sonner";
+import { useParams } from "react-router-dom";
 
 function Upload() {
+  const {roomName}=useParams()
   const [files, setFiles] = useState([]);
 
   const upload = async (selectedFiles) => {
@@ -16,7 +18,7 @@ function Upload() {
 
     await handleFileUpload(selectedFiles[0]);
   };
-  const uploadAPI=`${import.meta.env.VITE_API_BASE_URL}/uploads`;
+  const uploadAPI=`${import.meta.env.VITE_API_BASE_URL}/${roomName}/uploads`;
   const handleFileUpload = async (file) => {
     try {
       const formData = new FormData();
@@ -35,7 +37,7 @@ function Upload() {
       const result = await res.json();
       console.log(result);
       toast.success("Uploaded Successfully")
-      window.location.href="/"
+      window.location.href=`/${roomName}`
     } catch (err) {
       console.error(err);
       alert("Upload error");

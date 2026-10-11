@@ -34,7 +34,6 @@ export function UploadBox() {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>
     </Dialog>

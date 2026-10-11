@@ -7,8 +7,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
@@ -20,10 +18,14 @@ import { useContext } from "react"
 import { AuthProvider } from "@/components/Context"
 import { LogOut } from "lucide-react"
 import { AvatarWithBadge } from "@/components/avatar"
-import ToggleTheme from "@/components/toggleThemebtn"
+import ToggleTheme from "@/components/shadcn-space/toggle/toggleThemebtn"
 import { useState } from "react"
+import { useParams } from "react-router-dom"
+import PouchDb from 'pouchdb'
 
-export default function DashBoard() {
+export default function DashBoard(){
+  const {roomName}=useParams()
+  const db = new PouchDb(`downloaded_files_${roomName}`);
   const  {handlelogout,userName,theme,setTheme}=useContext(AuthProvider);
   const [showLogout, setShowLogout] = useState(false);
   return (
@@ -37,7 +39,7 @@ export default function DashBoard() {
           <br />
           <SidebarGroupContent>
             <SidebarMenu>
-              <Pouchdb/>
+              <Pouchdb dburi={db}/>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -50,7 +52,6 @@ export default function DashBoard() {
         <AvatarWithBadge/> 
         <strong className="mt-1">{userName}</strong>
       </div> 
-
       {showLogout && (
         <Button 
           className="w-30 cursor-pointer bg-gray-400 text-black font-extrabold hover:text-red-500 hover:bg-transparent hover:border-red-500 hover:border-2 flex items-center gap-1 transition-all" 
@@ -65,20 +66,20 @@ export default function DashBoard() {
     </SidebarFooter>
   </Sidebar>
 
-  <div className={`flex flex-col w-full h-screen rounded-xl ${theme? 'bg-black':"bg-white"}`}>
-        <header className="flex h-16 items-center border-b px-4  dark:bg-zinc-950">
+   <div className={`flex flex-col w-full h-screen ${theme ? 'bg-zinc-950 text-white' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
+       <header className={`flex h-16 items-center justify-between px-6 border-b ${theme ? 'border-zinc-800 bg-zinc-900/50 backdrop-blur-md' : 'border-slate-200 bg-white/80 backdrop-blur-md'} sticky top-0 z-10`}>
           <div className="flex-1 flex justify-start">
              <SidebarTrigger variant={theme?"default":"ghost"}/>
           </div>
-            <h1 className='text-4xl text-green-500 font-extrabold'>Shared Files</h1>
+            <h1 className='text-3xl text-green-500 font-extrabold'>Shared Files</h1>
           <div className="flex-1 flex justify-end gap-3">
             <UploadBox/>
-            <ToggleTheme className="cursor-pointer" theme={theme} setTheme={setTheme}/>
-          </div>
+            <ToggleTheme className="cursor-pointer" theme={theme} setTheme={setTheme} />
+          </div>  
         </header>
 
         <main className={`flex-1  p-0 w-full thin-scrollbar overflow-y-auto rounded-b-xl ${theme?'bg-gray-900':''}`}>
-          <OfflineStore />
+          <OfflineStore db={db}/>
         </main>
       </div>
     </SidebarProvider>

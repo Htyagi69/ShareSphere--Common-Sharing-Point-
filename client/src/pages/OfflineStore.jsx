@@ -1,14 +1,15 @@
 import React , { useEffect, useState } from 'react'
 import PouchDb from 'pouchdb';
-const db=new PouchDb('downloaded_files')
+import { useParams } from 'react-router-dom';
+
 
 const FILE_CACHE_NAME='ShareSphere-file-storage';
 
-export async function save(s3url,filename,filetype){
+export async function save(db,s3url,filename,filetype,roomName){
 
    try{
      const cache=await caches.open(FILE_CACHE_NAME)
-     const result=await fetch(s3url)
+     const result=await fetch(s3url) 
      if(!result.ok) throw new Error('"Network response was not ok"');
         await cache.put(filename,result);
         console.log(`${filename} is now saved for offline use!`)
@@ -20,19 +21,19 @@ export async function save(s3url,filename,filetype){
           downloadedAt: new Date().toISOString()
      }
      try{
-      await db.put(newDoc)
+      await db.put(newDoc);
     //   console.log('BrowserUrl is===',uri);
-      window.location.href='/';
+      window.location.href=`/${roomName}`;
     }catch(err){
         if(err.status===409){
-            const existingDoc=await db.get(filename);
-            db.put({
+          const existingDoc=await db.get(filename);
+          db.put({
                 ...newDoc,
                 _rev:existingDoc._rev,
             })
             console.log('PouchDB updated successfully:', newDoc);
         }else {
-        throw err; // It was a different error, re-throw it
+        throw err;
       }
     }
     }catch(err){
@@ -41,7 +42,7 @@ export async function save(s3url,filename,filetype){
 } 
 
 async function offlineFilesUrl(filename,fileType){
-   const cache= await caches.open('ShareSphere-file-storage');
+  const cache= await caches.open('ShareSphere-file-storage');
    const matchresponse= await cache.match(filename);
    if(matchresponse){
        const originalBlob= await matchresponse.blob();
@@ -51,7 +52,7 @@ async function offlineFilesUrl(filename,fileType){
    }
    return null;
 }
-function OfflineStore() {
+function OfflineStore({db}) {
     let [img,setImg]=useState([])
     let [file,setFile]=useState([]);
     let [video,setVideo]=useState([]);
