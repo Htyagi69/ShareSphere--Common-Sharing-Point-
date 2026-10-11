@@ -8,6 +8,7 @@ import AuthContext, { AuthProvider } from './components/Context'
 import Dashboard from './pages/Dashboard'
 import { Toaster } from 'sonner'
 import LoadingScreen from './pages/LoadingScreen'
+import Lockers from './pages/Lockers'
 
 export function AppRoutes(){
   const {isAuthenticated,loading}=useContext(AuthProvider)
@@ -20,12 +21,10 @@ if (loading) return <LoadingScreen/>
              {/* It prevents the /login or /signup page from being saved in the browser's back-button history */}
             <Route path='/login' element={isAuthenticated? <Navigate to="/" replace/> : <Login/>}/>
             <Route path="/" element={
-                isAuthenticated ? <Dashboard/> : <Navigate to="/login"/>
+                isAuthenticated ? <Lockers/> : <Navigate to="/login"/>
             }/>
-            <Route path='/upload' element={
-              isAuthenticated  ? <Upload/> : <Navigate to="/login"/>
-            }/>
-          <Route path='*' element={<Navigate to="/"/>}/>
+          <Route path='/:roomName' element={isAuthenticated?<Dashboard/>:<Navigate to="/login"/>}/>
+          <Route path='*' element={isAuthenticated?<Navigate to="/"replace/>:<Login/>}/>
           </Routes>
         </BrowserRouter>
   )

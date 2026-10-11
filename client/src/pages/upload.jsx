@@ -31,7 +31,8 @@ function Upload() {
       });
 
       if (!res.ok) {
-        throw new Error("Upload failed");
+        const error=await res.json()
+        throw new Error(error.message);
       }
 
       const result = await res.json();
@@ -40,7 +41,7 @@ function Upload() {
       window.location.href=`/${roomName}`
     } catch (err) {
       console.error(err);
-      alert("Upload error");
+      alert(err.message);
     }
   };
 
