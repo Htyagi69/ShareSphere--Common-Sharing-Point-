@@ -19,15 +19,68 @@ import { AuthProvider } from "@/components/Context"
 import { LogOut } from "lucide-react"
 import { AvatarWithBadge } from "@/components/avatar"
 import ToggleTheme from "@/components/shadcn-space/toggle/toggleThemebtn"
-import { useState } from "react"
-import { useParams } from "react-router-dom"
+import { useState,useEffect } from "react"
+import { useParams,useNavigate } from "react-router-dom"
 import PouchDb from 'pouchdb'
+import { Loader2 ,ShieldAlert} from "lucide-react"
 
 export default function DashBoard(){
   const {roomName}=useParams()
+  const navigate=useNavigate()
+  const [isAuthorized,setIsAuthorized]=useState(null)
   const db = new PouchDb(`downloaded_files_${roomName}`);
   const  {handlelogout,userName,theme,setTheme}=useContext(AuthProvider);
   const [showLogout, setShowLogout] = useState(false);
+
+  useEffect(()=>{
+      const verifyAcess=async()=>{
+        try{
+            const res=await fetch(`${import.meta.env.VITE_API_BASE_URL}/${roomName}/verification`,{
+                method:'GET',
+                credentials:'include'
+            })
+            if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Access denied");
+        }
+        const data=await res.json();
+        setIsAuthorized(true);
+        }catch(err){
+            console.error("Authorization check failed:", err);
+           setIsAuthorized(false);
+        }
+      }
+      verifyAcess()
+    },[roomName])
+
+  if (isAuthorized === null) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-green-500 mb-2" />
+        <p className="text-sm text-zinc-400">Verifying locker clearance...</p>
+      </div>
+    );
+  }
+
+  if (isAuthorized === false) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-white px-4">
+        <div className="p-4 rounded-full bg-red-500/10 text-red-500 mb-4 border border-red-500/20">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold tracking-tight mb-1">Access Denied</h2>
+        <p className="text-sm text-zinc-400 text-center max-w-sm mb-6">
+          You do not have permission to view this locker, or it does not exist.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="px-4 py-2 rounded-xl bg-green-500 text-zinc-950 font-bold hover:bg-green-400 transition-colors cursor-pointer"
+        >
+          Return to My Lockers
+        </button>
+      </div>
+    );
+  }
   return (
     <SidebarProvider>
     <Sidebar>

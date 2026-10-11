@@ -63,6 +63,19 @@ app.post('/subscribed/rooms',LoggedInUsersOnly,async(req,res)=>{
   }
 })
 
+app.get('/:roomName/verification',LoggedInUsersOnly,roomContextMiddleware,async(req,res)=>{
+  try{
+     return res.status(200).json({
+      message:'Authorized',
+      roomSlug:req.room.roomName,
+      owner:req.room.owner.equals(req.user._id),
+     })
+  }catch (error) {
+        console.error('Verification error:', error);
+        return res.status(500).json({ message: 'Internal Server error' });
+    }
+})
+
 app.post('/:roomName',LoggedInUsersOnly,async(req,res)=>{
     try{
     const roomName=req.params.roomName.toLowerCase();   
