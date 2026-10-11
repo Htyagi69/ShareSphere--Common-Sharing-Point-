@@ -5,8 +5,9 @@ import { toast } from 'sonner'
 export const AuthProvider=createContext()
 
 function AuthContext({children}) {
-    const [theme,setTheme]=useState(false)
+    const [theme,setTheme]=useState(true)
     const [userName,setUsername]=useState('')
+    const [userMail,setUsermail]=useState('')
     const [isAuthenticated,setIsAuthenticated]=useState(false)
     const [loading,setLoading]=useState(true);
     const verifyURI=`${import.meta.env.VITE_API_BASE_URL}/auth/verify`
@@ -22,6 +23,7 @@ function AuthContext({children}) {
             if(response.authenticated) {
                 setIsAuthenticated(true);
                 setUsername(response.user.name)
+                setUsermail(response.user.email)
             }
             else{
                 if (retries > 0) {
@@ -59,7 +61,7 @@ function AuthContext({children}) {
     }
 }
     return (
-        <AuthProvider.Provider value={{isAuthenticated,loading,setIsAuthenticated,handlelogout,theme,setTheme,userName,setUsername}}>
+        <AuthProvider.Provider value={{isAuthenticated,loading,setIsAuthenticated,handlelogout,theme,setTheme,userName,setUsername,userMail,setUsermail}}>
             {children}
         </AuthProvider.Provider>
     )

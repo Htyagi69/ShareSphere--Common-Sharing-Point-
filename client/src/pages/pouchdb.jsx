@@ -4,12 +4,14 @@ import {save} from './OfflineStore';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Trash2,FileImage,FileVideo,FileAudio,FileText,File,Download,ExternalLink,FolderIcon } from 'lucide-react';
-function Pouchdb() {
+import { useParams } from 'react-router-dom';
+function Pouchdb({dburi}) {
     //Initialize the local database (this lives on the user's disk)
-    const db=new PouchDb('Share_Local')
+    const {roomName}=useParams()
+    const db=new PouchDb(`Share_Local_${roomName}`)
     window.db=db;
     //points to couchDb
-    const couchURI=import.meta.env.VITE_API_DB_URL;
+    const couchURI=`${import.meta.env.VITE_API_DB_URL}_${roomName.toLocaleLowerCase()}`;    
     const remoteDB=new PouchDb(couchURI)
     const [files,setFiles]=useState([])
 
@@ -33,14 +35,14 @@ function Pouchdb() {
                 loadLocaldata()
               }) 
               return ()=>sync.cancel()
-       },[])
+       },[roomName])
     //  const [isDownloading,setIsDownloading]=useState(false);
      const [downloadingId, setDownloadingId] = useState(null)
        async function handleDownload(url,name,type){
         //    setIsDownloading(true);
            setDownloadingId(name)
            try{
-            await save(url,name,type);
+            await save(dburi,url,name,type,roomName);
                markseenFiles(name);
            }catch (error) {
                console.error("Download failed", error);
@@ -49,7 +51,7 @@ function Pouchdb() {
               setDownloadingId(null);
              }
        }
-       const deleteURI=`${import.meta.env.VITE_API_BASE_URL}/deleteFile`
+       const deleteURI=`${import.meta.env.VITE_API_BASE_URL}/${roomName}/deleteFile`
  const [deleteId, setDeleteId] = useState(null)
        async function handleDelete(name){
            setDeleteId(name);
@@ -176,5 +178,4 @@ const getTimeLeft=(urlExpiresAt)=>{
 }
 
 export default Pouchdb
-
 
