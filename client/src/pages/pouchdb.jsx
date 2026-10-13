@@ -6,11 +6,9 @@ import { toast } from 'sonner';
 import { Trash2,FileImage,FileVideo,FileAudio,FileText,File,Download,ExternalLink,FolderIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 function Pouchdb({dburi}) {
-    //Initialize the local database (this lives on the user's disk)
     const {roomName}=useParams()
     const db=new PouchDb(`Share_Local_${roomName}`)
     window.db=db;
-    //points to couchDb
     const couchURI=`${import.meta.env.VITE_API_DB_URL}_${roomName.toLocaleLowerCase()}`;    
     const remoteDB=new PouchDb(couchURI)
     const [files,setFiles]=useState([])
