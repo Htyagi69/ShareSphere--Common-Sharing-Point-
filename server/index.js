@@ -43,6 +43,7 @@ app.use(cookieParser())
 
 app.post('/subscribed/rooms',LoggedInUsersOnly,async(req,res)=>{
     try{   
+    const userId = req.user._id.toString();
     const userMail=req.user.email
     console.log("email",userMail);
     
@@ -54,13 +55,45 @@ app.post('/subscribed/rooms',LoggedInUsersOnly,async(req,res)=>{
     if (!subscriber) {
       return res.status(404).json({ message: 'User not found in database', lockers: [] });
     }
-    const userRooms=subscriber.subscribed_Rooms || []
-    console.log("dbs",userRooms);
+    const userRooms=subscriber.subscribed_Rooms.map(room=>{
+      const isOwner=room.owner.toString()===userId
+      return {
+        _id:room._id,
+        roomName:room.roomName,
+        roomSlug:room.roomSlug,
+        owner:room.owner,
+        tag:isOwner ? "owner":"shared"
+      }
+    }) || []
+    // console.log("dbs",userRooms);
     return res.status(200).json({"lockers":userRooms});
   }catch(error){
     console.error('Database error',error)
     return res.status(500).json({message:'Internal Server error'})
   }
+})
+
+app.post('/unsubscribe',LoggedInUsersOnly,async(req,res)=>{
+  try{
+  const userId=req.user?._id.toString();
+  const {roomSlug}=req.body;
+  const room = await Room.findOne({ roomSlug: roomSlug.toLowerCase() });
+        if (!room) {
+            return res.status(404).json({ message: "Room not found" });
+        }
+   await Room.updateOne(
+    {roomSlug:roomSlug.toLowerCase()},
+    {$pull:{subscribers:userId}}
+   )
+   await User.findByIdAndUpdate(
+    userId,
+    {$pull:{subscribed_Rooms:room._id}}
+   )
+  return res.status(200).json({ message: "Successfully left the room" });
+    } catch (error) {
+        console.error("Error leaving room:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
 })
 
 app.post('/:roomName/join', LoggedInUsersOnly, async (req, res) => {
@@ -177,29 +210,6 @@ app.post('/:roomName/uploads',LoggedInUsersOnly,roomContextMiddleware,upload.sin
 }catch(err){
    console.error(err);
    return res.status(500).json({ message: "Upload failed" });
-    }
-})
-
-app.post('/unsubscribe',LoggedInUsersOnly,async(req,res)=>{
-  try{
-  const userId=req.user?._id.toString();
-  const {roomSlug}=req.body.roomSlug;
-  const room = await Room.findOne({ roomSlug: roomSlug.toLowerCase() });
-        if (!room) {
-            return res.status(404).json({ message: "Room not found" });
-        }
-   await Room.updateOne(
-    {roomSlug:roomSlug.toLowerCase()},
-    {$pull:{subscribers:userId}}
-   )
-   await User.findByIdAndUpdate(
-    userId,
-    {$pull:{subscribed_Rooms:room._id}}
-   )
-  return res.status(200).json({ message: "Successfully left the room" });
-    } catch (error) {
-        console.error("Error leaving room:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
     }
 })
 

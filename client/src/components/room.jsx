@@ -23,12 +23,13 @@ export default function Room({ cards, loading, theme }) {
         headers:{
           "Content-Type":"application/json",
         },
-        body:json.stringify(room.roomSlug),
+        body:JSON.stringify({roomSlug:room.roomSlug}),
         credentials:'include'
        }) 
        const response=await userState.json();
        if(userState.ok){
        toast.success(`Deleted ${room.roomName}!`,{ position: "bottom-right" });
+       sessionStorage.clear()
        window.location.href=`/`
       }
       else{
@@ -108,6 +109,9 @@ export default function Room({ cards, loading, theme }) {
                 </h3>
                 <p className="text-xs text-zinc-400">Click to enter locker</p>
               </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-yellow-400/10 text-green-500 border border-green-500/20">
+                {room.tag}
+              </span>
               <div className="w-8 h-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
                 <ArrowRight className="w-4 h-4" />
               </div>
