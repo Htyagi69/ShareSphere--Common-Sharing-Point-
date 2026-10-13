@@ -48,6 +48,8 @@ const roomsSchema=new mongoose.Schema({
       type:mongoose.Schema.ObjectId,
       ref:'User'
    }],
+   inviteToken:{type:String,default:null},
+   inviteExpiresAt:{type:Date,default:null}
 })
 
 export const User=mongoose.model('User',urlSchema);

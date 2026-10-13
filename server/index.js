@@ -14,7 +14,7 @@ import GoogleStrategy from 'passport-google-oidc'
 import {User,Room} from './model/auth.js';
 import corsMiddleware from './Middleware/cors.js'
 import { nanoid } from 'nanoid';
-import { log } from 'console';
+import crypto from 'crypto'
 
 const app=express();
 app.use(session({secret:process.env.passportSecret,resave:false,saveUninitialized:true}));
@@ -63,11 +63,57 @@ app.post('/subscribed/rooms',LoggedInUsersOnly,async(req,res)=>{
   }
 })
 
+app.post('/:roomName/join', LoggedInUsersOnly, async (req, res) => {
+    try {
+        const userId = req.user._id.toString();
+        const { token } = req.query; 
+        const identifier = req.params.roomName.toLowerCase();
+        
+        const room = await Room.findOne({
+          $or: [{ roomSlug: identifier }, { roomName: identifier }]
+        });
+        
+        if (!room) {
+          return res.status(404).json({ message: 'Locker not found' });
+        }
+        const isOwner = room.owner.equals(userId);
+        const isSubscriber = room.subscribers.some(subId => subId.equals(userId));
+
+        if (!isOwner && !isSubscriber) {
+            // If they aren't a member, they MUST provide a valid, unexpired token
+            if (!token || room.inviteToken !== token) {
+                return res.status(403).json({ message: 'Invalid or missing invite token' });
+            }
+
+            if (room.inviteExpiresAt && new Date() > room.inviteExpiresAt) {
+                return res.status(400).json({ message: 'This invite link has expired' });
+            }
+
+            await Room.findByIdAndUpdate(room._id, {
+                $addToSet: { subscribers: userId }
+            });
+            await User.findByIdAndUpdate(userId, {
+                $addToSet: { subscribed_Rooms: room._id }
+            });
+        }
+
+        return res.status(200).json({ 
+            message: 'Successfully joined locker', 
+            roomSlug: room.roomSlug,
+            roomName: room.roomName 
+        });
+    } catch (error) {
+        console.error('Join room error:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 app.get('/:roomName/verification',LoggedInUsersOnly,roomContextMiddleware,async(req,res)=>{
   try{
      return res.status(200).json({
       message:'Authorized',
-      roomSlug:req.room.roomName,
+      roomName:req.room.roomName,
+      roomSlug:req.room.roomSlug,
       owner:req.room.owner.equals(req.user._id),
      })
   }catch (error) {
@@ -131,6 +177,54 @@ app.post('/:roomName/uploads',LoggedInUsersOnly,roomContextMiddleware,upload.sin
 }catch(err){
    console.error(err);
    return res.status(500).json({ message: "Upload failed" });
+    }
+})
+
+app.post('/unsubscribe',LoggedInUsersOnly,async(req,res)=>{
+  try{
+  const userId=req.user?._id.toString();
+  const {roomSlug}=req.body.roomSlug;
+  const room = await Room.findOne({ roomSlug: roomSlug.toLowerCase() });
+        if (!room) {
+            return res.status(404).json({ message: "Room not found" });
+        }
+   await Room.updateOne(
+    {roomSlug:roomSlug.toLowerCase()},
+    {$pull:{subscribers:userId}}
+   )
+   await User.findByIdAndUpdate(
+    userId,
+    {$pull:{subscribed_Rooms:room._id}}
+   )
+  return res.status(200).json({ message: "Successfully left the room" });
+    } catch (error) {
+        console.error("Error leaving room:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+})
+
+app.post('/:roomSlug/generate-invite',LoggedInUsersOnly,async (req,res)=>{
+  try{
+  const userId = req.user._id.toString();
+  const roomSlug=req.params.roomSlug.toLowerCase();
+  const room=await Room.findOne({roomSlug})
+  if (!room) return res.status(404).json({ message: "Locker not found" });
+  if(!room.owner.equals(userId)){
+    return res.status(403).json({ message: "Only the owner can create invite links" });
+  }
+  const inviteToken=crypto.randomBytes(10).toString('hex')
+  const inviteExpiresAt=new Date(Date.now()+24*60*60*1000)
+  room.inviteToken=inviteToken;
+  room.inviteExpiresAt=inviteExpiresAt;
+  room.save();
+  const inviteLink = `${process.env.FRONTEND_URL}/${room.roomSlug}?token=${inviteToken}`;
+  return res.status(200).json({ 
+            message: "Invite link generated successfully", 
+            inviteLink,
+            expiresAt: inviteExpiresAt 
+        });} catch (error) {
+        console.error("Invite generation error:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 })
 
