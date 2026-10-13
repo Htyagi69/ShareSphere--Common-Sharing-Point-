@@ -31,10 +31,10 @@ export default function Lockers() {
         });
         if (response.ok) {
           const result = await response.json();
-          const dblist = result.lockers || [];
-          console.log("list", dblist);
-          sessionStorage.setItem(cacheKey, JSON.stringify(dblist));
-          setCards(dblist);
+          const rooms = result.lockers || [];
+          console.log("list", rooms);
+          sessionStorage.setItem(cacheKey, JSON.stringify(rooms));
+          setCards(rooms);
         } else {
           console.error("Failed to fetch rooms, status:", response.status);
         }
