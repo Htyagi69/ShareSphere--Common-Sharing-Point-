@@ -41,6 +41,10 @@ app.use(cookieParser())
 //     })
 // }
 
+app.get("/health",(req,res)=>{
+  return res.status(200).json({message:"You are all set!!"})
+})
+
 app.post('/subscribed/rooms',LoggedInUsersOnly,async(req,res)=>{
     try{   
     const userId = req.user._id.toString();
