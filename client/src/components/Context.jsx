@@ -5,7 +5,10 @@ import { toast } from 'sonner'
 export const AuthProvider=createContext()
 
 function AuthContext({children}) {
-    const [theme,setTheme]=useState(true)
+    const [theme,setTheme]=useState(()=>{
+        const saved= localStorage.getItem("theme")
+        return saved==="true"
+    })
     const [userName,setUsername]=useState('')
     const [userMail,setUsermail]=useState('')
     const [isAuthenticated,setIsAuthenticated]=useState(false)
@@ -54,6 +57,7 @@ function AuthContext({children}) {
         setIsAuthenticated(false);
         const response =res.json();
         console.log(response.message);
+        sessionStorage.clear();
         localStorage.removeItem('token');
         toast.success("Logout Successfully",{ position: "bottom-right" })
     }catch (err) {

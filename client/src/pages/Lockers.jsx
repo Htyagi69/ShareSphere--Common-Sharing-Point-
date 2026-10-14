@@ -4,11 +4,13 @@ import { AuthProvider } from "@/components/Context";
 import Room from "@/components/room";
 import { CreateDialog } from "@/components/createDialog";
 import { FolderKanban, LogOut } from "lucide-react";
+import { AvatarWithBadge } from "@/components/avatar"
 
 export default function Lockers() {
-  const { handlelogout, userMail, theme, setTheme } = useContext(AuthProvider);
+  const { handlelogout, userMail, theme, setTheme,userName } = useContext(AuthProvider);
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [show,setShow]=useState(false)
 
   useEffect(() => {
     if(!userMail) return;
@@ -62,7 +64,14 @@ export default function Lockers() {
         <div className="flex items-center gap-3">
           <CreateDialog setCards={setCards} userMail={userMail} />
           <ToggleTheme className="cursor-pointer" theme={theme} setTheme={setTheme} />
-          {handlelogout && (
+          <div 
+            className="flex gap-2 items-center cursor-pointer select-none w-full hover:opacity-80 transition-opacity" 
+            onClick={() => setShow(!show)}
+          > 
+            <AvatarWithBadge/> 
+            <strong className="mt-1">{userName}</strong>
+          </div> 
+          {show && handlelogout && (
             <button 
               onClick={handlelogout}
               title="Logout"

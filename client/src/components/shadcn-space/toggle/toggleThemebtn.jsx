@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button"; // Wrap it in shadcn's button s
 const ToggleTheme = ({ theme, setTheme }) => {
   return (
     <Button
-      onClick={() => setTheme((prev) => !prev)}
+      onClick={() =>{
+        const nextTheme=!theme
+        setTheme(nextTheme)
+        localStorage.setItem("theme",nextTheme)
+      }}
       aria-label="Toggle theme"
       type="button"
       variant="ghost" // Matches standard shadcn styling
