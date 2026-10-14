@@ -7,7 +7,7 @@ import { FolderKanban, LogOut } from "lucide-react";
 import { AvatarWithBadge } from "@/components/avatar"
 
 export default function Lockers() {
-  const { handlelogout, userMail, theme, setTheme,userName } = useContext(AuthProvider);
+  const { handlelogout, userMail, theme, setTheme,userName,profileImage } = useContext(AuthProvider);
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [show,setShow]=useState(false)
@@ -68,7 +68,7 @@ export default function Lockers() {
             className="flex gap-2 items-center cursor-pointer select-none w-full hover:opacity-80 transition-opacity" 
             onClick={() => setShow(!show)}
           > 
-            <AvatarWithBadge/> 
+            <AvatarWithBadge profileImage={profileImage}/> 
             <strong className="mt-1">{userName}</strong>
           </div> 
           {show && handlelogout && (

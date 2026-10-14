@@ -44,6 +44,7 @@ export async function setUser(user){
         _id:user._id,
         email:user.email,
         name:capitalize(user.firstname)+" " +capitalize(user.lastname),
+        profileImage:user.profileImage
     },secret,{ expiresIn: '24h' })
 }
 

@@ -11,6 +11,7 @@ function AuthContext({children}) {
     })
     const [userName,setUsername]=useState('')
     const [userMail,setUsermail]=useState('')
+    const [profileImage,setProfileImage]=useState(null)
     const [isAuthenticated,setIsAuthenticated]=useState(false)
     const [loading,setLoading]=useState(true);
     const verifyURI=`${import.meta.env.VITE_API_BASE_URL}/auth/verify`
@@ -27,6 +28,7 @@ function AuthContext({children}) {
                 setIsAuthenticated(true);
                 setUsername(response.user.name)
                 setUsermail(response.user.email)
+                setProfileImage(response.user.profileImage)
             }
             else{
                 if (retries > 0) {
@@ -65,7 +67,7 @@ function AuthContext({children}) {
     }
 }
     return (
-        <AuthProvider.Provider value={{isAuthenticated,loading,setIsAuthenticated,handlelogout,theme,setTheme,userName,setUsername,userMail,setUsermail}}>
+        <AuthProvider.Provider value={{isAuthenticated,loading,setIsAuthenticated,handlelogout,theme,setTheme,userName,setUsername,userMail,setUsermail,profileImage}}>
             {children}
         </AuthProvider.Provider>
     )

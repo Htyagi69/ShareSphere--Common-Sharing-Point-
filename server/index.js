@@ -304,18 +304,19 @@ app.post('/auth/login',async(req,res)=>{
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_CALLBACK_URL,
-  scope: [ 'profile' ]
+  scope: [ 'profile','email']
   }, 
-async (issuer, profile, done) => { // Google OIDC strategy provides 'issuer' first
+async (issuer, profile, done) => { 
   try {
-    // Accessing email from the profile object
-    const email = profile.emails[0].value;
+      const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+      const profileImage = profile.photos && profile.photos[0] ? profile.photos[0].value : '';
     
-    // Logic to find or create user in your DB
+      if (!email) {
+        return done(new Error("No email found from Google profile"), null);
+      }
     let user = await User.findOne({ email }); 
     if (!user) {
-      // Create user if they don't exist
-      user = await User.create({ email, firstname: profile.displayName, lastname:'K',password:'GOOGLE_AUTH_PASSPORT_JS'});
+      user = await User.create({ email,profileImage:profileImage ,firstname: profile.displayName, lastname:'',password:'GOOGLE_AUTH_PASSPORT_JS'});
     }
     console.log("issuer",issuer);
     return done(null, user);
@@ -331,9 +332,8 @@ app.get('/auth', passport.authenticate('google', {
   scope: ['profile', 'email']
 }))
 
-app.get('/auth/google',passport.authenticate('google',{failureRedirect:'https://share-sphere-common-sharing-point.vercel.app/login'}),
+app.get('/auth/google',passport.authenticate('google',{failureRedirect:`${process.env.FRONTEND_URL}/login`}),
 async(req,res)=>{
-  // this route contain whaever i pass to done() in the Googlestrategy
   const userToken=await setUser(req.user);
   res.cookie('uid',userToken,{
         httpOnly:true,
@@ -342,7 +342,7 @@ async(req,res)=>{
         path:'/',
         maxAge:24*60*60*1000
   })
-  res.redirect('https://share-sphere-common-sharing-point.vercel.app')
+  res.redirect(process.env.FRONTEND_URL)
 })
 
 

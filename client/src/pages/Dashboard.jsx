@@ -20,7 +20,7 @@ export default function DashBoard(){
   const [searchParams]=useSearchParams()
   const [status,setStatus]=useState("loading")
   const db = new PouchDb(`downloaded_files_${roomName}`);
-  const  {handlelogout,userName,theme,setTheme}=useContext(AuthProvider);
+  const  {handlelogout,userName,theme,setTheme,profileImage}=useContext(AuthProvider);
   const [showLogout, setShowLogout] = useState(false);
   const [roomData, setRoomData] = useState(null);
   const token=searchParams.get("token")
@@ -135,7 +135,7 @@ export default function DashBoard(){
         className="flex gap-2 items-center cursor-pointer select-none w-full hover:opacity-80 transition-opacity" 
         onClick={() => setShowLogout(!showLogout)}
       > 
-        <AvatarWithBadge/> 
+        <AvatarWithBadge profileImage={profileImage}/> 
         <strong className="mt-1">{userName}</strong>
       </div> 
       {showLogout && (

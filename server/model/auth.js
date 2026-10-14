@@ -23,6 +23,10 @@ const urlSchema=new mongoose.Schema({
     type:String,
     required:true,
    },
+   profileImage: {
+        type: String,
+        default: 'https://github.com/shadcn.png'
+    },
    subscribed_Rooms:[{
       type:mongoose.Schema.ObjectId,
       ref:'Room',
