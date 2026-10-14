@@ -174,7 +174,7 @@ app.post('/:roomName',LoggedInUsersOnly,async(req,res)=>{
       userId,
       {$addToSet:{subscribed_Rooms:room._id}}
     )
-    return res.status(200).json({"message":`${roomName} bucket created`,roomSlug});
+    return res.status(200).json({roomName: roomName.toLowerCase(), roomSlug:roomSlug, tag: "owner" });
   }catch(error){
     console.error('Database error',error)
     return res.status(500).json({message:'Internal Server error'})

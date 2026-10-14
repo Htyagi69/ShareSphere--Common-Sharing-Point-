@@ -38,8 +38,8 @@ export function CreateDialog({setCards,userMail}) {
             throw new Error("Failed to create room database on the server");
           }
           const data = await createDBfolder.json();
-             setCards(prev=>[...prev,{roomName:roomName.toLowerCase(),roomSlug:data.roomSlug}])
-             console.log(`Database folder for ${roomName} ready!${data.roomSlug}`);
+             setCards(prev=>[...prev,{roomName:roomName.toLowerCase(),roomSlug:data.roomSlug,tag:data.tag}])
+             console.log(`Database folder for ${roomName} ready!${data.roomSlug} with tag ${data.tag}`);
              sessionStorage.removeItem(`subscribed_rooms_${userMail}`);
        }catch(error){
         console.error("Error setting up server room database:", error);
