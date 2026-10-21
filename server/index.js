@@ -314,7 +314,9 @@ async (issuer, profile, done) => {
   try {
       const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
       const profileImage = profile.photos && profile.photos[0] ? profile.photos[0].value : '';
-    
+      console.log("Google profile:", JSON.stringify(profile, null, 2));
+console.log("Google photos:", profile.photos);
+console.log("Google image URL:", profile.photos?.[0]?.value);
       if (!email) {
         return done(new Error("No email found from Google profile"), null);
       }
