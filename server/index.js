@@ -308,15 +308,14 @@ app.post('/auth/login',async(req,res)=>{
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_CALLBACK_URL,
-  scope: [ 'profile','email']
+  userProfileURL: "https://openidconnect.googleapis.com/v1/userinfo",
+  scope: [ 'openid','profile','email']
   }, 
 async (issuer, profile, done) => { 
   try {
       const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
-      const profileImage = profile.photos && profile.photos[0] ? profile.photos[0].value : '';
-      console.log("Google profile:", JSON.stringify(profile, null, 2));
-console.log("Google photos:", profile.photos);
-console.log("Google image URL:", profile.photos?.[0]?.value);
+      const profileImage = profile.photos?.[0]?.value || profile.picture || profile._json?.picture || "";
+       console.log("Profile image:", profileImage);
       if (!email) {
         return done(new Error("No email found from Google profile"), null);
       }
