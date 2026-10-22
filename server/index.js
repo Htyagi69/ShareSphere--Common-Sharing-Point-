@@ -328,7 +328,7 @@ passport.use(
           profile._json?.picture ||
           "";
 
-        console.log("Profile image:", profileImage);
+        console.log("Profile image:", profile);
 
         if (!email) {
           return done(new Error("No email found from Google profile"), null);
