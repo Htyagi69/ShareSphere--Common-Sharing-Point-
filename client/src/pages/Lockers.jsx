@@ -35,7 +35,7 @@ export default function Lockers() {
         if (response.ok) {
           const result = await response.json();
           const rooms = result.lockers || [];
-          console.log("list", rooms);
+          // console.log("list", rooms);
           sessionStorage.setItem(cacheKey, JSON.stringify(rooms));
           setCards(rooms);
         } else {

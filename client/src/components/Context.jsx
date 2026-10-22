@@ -23,8 +23,9 @@ function AuthContext({children}) {
                 credentials:'include'
             });
             const  response= await result.json();
-            console.log("res",response);
             if(response.authenticated) {
+                // console.log("user",response);
+                
                 setIsAuthenticated(true);
                 setUsername(response.user.name)
                 setUsermail(response.user.email)
@@ -46,7 +47,7 @@ function AuthContext({children}) {
                 // console.log('final',isAuthenticated);
             }
         }
-        console.log('start',isAuthenticated);
+        // console.log('start',isAuthenticated);
         checkAuth()
     },[])
     const logoutURI=`${import.meta.env.VITE_API_BASE_URL}/auth/logout`
