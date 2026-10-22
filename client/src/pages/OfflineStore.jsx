@@ -1,6 +1,7 @@
-import React , { useEffect, useState } from 'react'
+import React , { useContext, useEffect, useState } from 'react'
 import PouchDb from 'pouchdb';
 import { useParams } from 'react-router-dom';
+import { AuthProvider } from '@/components/Context';
 
 
 const FILE_CACHE_NAME='ShareSphere-file-storage';
@@ -53,6 +54,7 @@ async function offlineFilesUrl(filename,fileType){
    return null;
 }
 function OfflineStore({db}) {
+  const {theme}=useContext(AuthProvider)
     let [img,setImg]=useState([])
     let [file,setFile]=useState([]);
     let [video,setVideo]=useState([]);
@@ -106,10 +108,30 @@ function OfflineStore({db}) {
             console.log(err);   
         })
    }
-        return (
+if (img.length === 0 && video.length === 0 && file.length === 0) {
+  return (
+    <div className={`min-h-[60vh] flex flex-col items-center justify-center text-center px-4 transition-colors duration-300`}>
+      <img
+        src="/empty.svg"
+        alt="Your locker is empty"
+        className="w-full max-w-sm h-auto object-contain"
+      />
+
+      <h2 className="mt-4 text-xl font-semibold text-gray-800 dark:text-white">
+        Your locker is empty
+      </h2>
+
+      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+        Your offline files will appear here once you save them.
+      </p>
+    </div>
+  );
+}   
+  return (
             <div>
             <div className="relative flex w-full flex-col overflow-hidden mt-12">
           <div className=" w-full flex flex-wrap justify-center">
+            <h1>Mai kuch karna chah raha hu</h1>
              {img.map((item) => (
                <div key={item.id}
                  className="relative bg-black w-56 h-35 rounded-2xl m-3 overflow-hidden"
