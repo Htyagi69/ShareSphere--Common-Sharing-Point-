@@ -311,48 +311,11 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      userInfoURL: "https://openidconnect.googleapis.com/v1/userinfo",
-      skipUserProfile: false,
-
-      scope: ["openid", "profile", "email"],
+      scope: ["profile", "email"],
     },
-    async (issuer, profile, done) => {
-      try {
-        console.log("Google profile:", JSON.stringify(profile, null, 2));
-        console.log("Photos:", profile.photos);
-
-        const email = profile.emails?.[0]?.value;
-        const profileImage =
-          profile.photos?.[0]?.value ||
-          profile.picture ||
-          profile._json?.picture ||
-          "";
-
-        console.log("Profile image:", profile);
-
-        if (!email) {
-          return done(new Error("No email found from Google profile"), null);
-        }
-
-        let user = await User.findOne({ email });
-
-        if (!user) {
-          user = await User.create({
-            email,
-            profileImage,
-            firstname: profile.displayName,
-            lastname: "",
-            password: "GOOGLE_AUTH_PASSPORT_JS",
-          });
-        } else if (profileImage && user.profileImage !== profileImage) {
-          user.profileImage = profileImage;
-          await user.save();
-        }
-
-        return done(null, user);
-      } catch (err) {
-        return done(err);
-      }
+    (accessToken, refreshToken, profile, done) => {
+      console.dir(profile, { depth: null });
+      return done(null, profile);
     }
   )
 );
@@ -362,7 +325,7 @@ passport.serializeUser((user,done)=>done(null,user));
 passport.deserializeUser((user,done)=>done(null,user));
 
 app.get('/auth', passport.authenticate('google', { 
-  scope: ['openid','profile', 'email']
+  scope: ['profile', 'email']
 }))
 
 app.get('/auth/google',passport.authenticate('google',{failureRedirect:`${process.env.FRONTEND_URL}/login`}),
