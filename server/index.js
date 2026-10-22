@@ -10,7 +10,7 @@ import { roomContextMiddleware,initDB } from './Middleware/roomContextMiddleware
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import session from 'express-session';
-import GoogleStrategy from 'passport-google-oidc'
+import GoogleStrategy from 'passport-google-oauth20'
 import {User,Room} from './model/auth.js';
 import corsMiddleware from './Middleware/cors.js'
 import { nanoid } from 'nanoid';
@@ -304,22 +304,29 @@ app.post('/auth/login',async(req,res)=>{
   }
   })
 
-  
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      scope: ["profile", "email"],
-    },
-    (accessToken, refreshToken, profile, done) => {
-      console.dir(profile, { depth: null });
-      return done(null, profile);
+  passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+  scope: [ 'profile','email']
+  }, 
+async (accessToken, refreshToken, profile, done) => {
+  try {
+      const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+      const profileImage = profile.photos && profile.photos[0] ? profile.photos[0].value : '';
+    
+      if (!email) {
+        return done(new Error("No email found from Google profile"), null);
+      }
+    let user = await User.findOne({ email }); 
+    if (!user) {
+      user = await User.create({ email,profileImage:profileImage ,firstname: profile.displayName, lastname:'',password:'GOOGLE_AUTH_PASSPORT_JS'});
     }
-  )
-);
-
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
+}));
 
 passport.serializeUser((user,done)=>done(null,user));
 passport.deserializeUser((user,done)=>done(null,user));
